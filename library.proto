@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package library_system;
+
+// --- Authentication Messages (For the Librarian to log into the client app) ---
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string user_id = 2; // Staff ID returned on success (for session tracking)
+  string message = 3; 
+}
+
+// --- Book Messages ---
+
+message Book {
+  int32 id = 1;
+  string title = 2;
+  string author = 3;
+  string isbn = 4;
+  bool is_available = 5;
+}
+
+message SearchRequest {
+  string query = 1; // Used for search keywords
+}
+
+// --- General Status Message (For CRUD operations) ---
+message StatusResponse {
+  bool success = 1;
+  string message = 2;
+  int32 entity_id = 3; // The ID of the item created/updated
+}
+
+// --- Service Definition: LibraryService (The API) ---
+
+service LibraryService {
+  // 1. Authentication
+  rpc UserLogin (LoginRequest) returns (LoginResponse) {} 
+  
+  // 2. Inventory Management (CRUD for Books)
+  rpc CreateBook (Book) returns (StatusResponse) {}
+  rpc SearchBooks (SearchRequest) returns (stream Book) {}
+  rpc GetBook (Book) returns (Book) {}
+  rpc UpdateBookAvailability (Book) returns (StatusResponse) {}
+
+  // 3. Loan Management (Core Librarian Tasks)
+  // We'll define more precise loan messages later, but use simple types for now:
+  rpc BorrowBook (StatusResponse) returns (StatusResponse) {} // StatusResponse carries book_id and member_id
+  rpc ReturnBook (StatusResponse) returns (StatusResponse) {}
+}
