@@ -22,6 +22,13 @@
         <input type="text" name="q" placeholder="Search Title or Author..." value="{{ query|default:'' }}">
         <button type="submit">RUN SEARCH RPC</button>
     </form>
+    
+    <hr>
+    
+    {% if book_results %}
+        <h3>Found {{ book_results|length }} Books:</h3>
+        
+        <table>
             <thead>
                 <tr><th>Title</th><th>Author</th><th>Available?</th></tr>
             </thead>
@@ -36,12 +43,8 @@
                 </tr>
                 {% endfor %}
             </tbody>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
         </table>
-    {% else %}
+        {% else %}
         <p>No results found, or the gRPC server is offline.</p>
         {% if query %}
             <p>Attempted search query: "{{ query }}"</p>
