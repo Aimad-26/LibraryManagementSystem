@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Librarian Login Test</title>
+</head>
+<body>
+    <h1>Librarian Login</h1>
+    
+    {% if message %}
+        <p style="color: red; border: 1px solid red; padding: 10px;">{{ message }}</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'staff_login' %}">
+        {% csrf_token %}
+        <p>Use Superuser credentials created on the server.</p>
+        <p>Username: <input type="text" name="username" required></p>
+        <p>Password: <input type="password" name="password" required></p>
+        <button type="submit">LOGIN</button>
+    </form>
+</body>
+</html>
