@@ -1,29 +1,47 @@
-# In server/grpc_handler.py
-
 import grpc
 from concurrent import futures
 import os
 import django
+import sys # Import sys to modify Python's search path
 from django.contrib.auth import authenticate 
-from django.db.models import Q # Used for complex field lookups
+from django.db.models import Q # Used for complex database lookups
+from django.db.utils import OperationalError
+from django.db import IntegrityError
 
-# --- 1. Django Setup (MUST be run before importing models) ---
-# Replace 'library_system_server.settings' with your actual Django project settings path
+# ----------------------------------------------------
+# 1. Django Environment Setup (Crucial for standalone scripts)
+# ----------------------------------------------------
+
+# 🚨 FIX: Add the directory containing the Django project (library_system_server) 
+# to the Python search path. '.' refers to the current directory (server/).
+sys.path.insert(0, os.path.abspath('.'))
+
+# Set the environment variable pointing to your settings file
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'library_system_server.settings')
-django.setup()
 
-# Import your custom models
+# Initialize Django environment
+try:
+    django.setup()
+except Exception as e:
+    # Print error but continue to allow non-DB-dependent module imports
+    print(f"Error during Django setup: {e}") 
+
+# Import your custom Django Models (Must happen AFTER django.setup())
 from library_admin.models import LibraryUser, Book 
 
-# Import generated protobuf code (ensure you ran protoc successfully first)
+# Import generated protobuf code (must be in the server directory or PYTHONPATH)
 import library_pb2
 import library_pb2_grpc
 
 
+# ----------------------------------------------------
+# 2. The gRPC Servicer Implementation
+# ----------------------------------------------------
+
 class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
     
     # ----------------------------------------------------
-    # A. Authentication (Staff/Librarian Login)
+    # A. Authentication (Staff/Librarian Login - RPC: Unary)
     # ----------------------------------------------------
     def UserLogin(self, request, context):
         """Authenticates a staff member for the Client application."""
@@ -51,16 +69,13 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
         return response
     
     # ----------------------------------------------------
-    # B. Inventory Management (Book Creation)
+    # B. Inventory Management (Book Creation - RPC: Unary)
     # ----------------------------------------------------
     def CreateBook(self, request, context):
-        """
-        RPC: Creates a new Book record in the database using Django ORM.
-        """
+        """Creates a new Book record in the database using Django ORM."""
         response = library_pb2.StatusResponse()
         
         try:
-            # Create a new Django Book instance from the incoming Protobuf data
             new_book = Book.objects.create(
                 title=request.title,
                 author=request.author,
@@ -68,27 +83,29 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
                 is_available=request.is_available
             )
             
-            # Populate and return the StatusResponse
             response.success = True
             response.message = f"Book '{request.title}' successfully created."
             response.entity_id = new_book.id
             
+        except IntegrityError:
+            response.success = False
+            response.message = f"Failed to create book: ISBN '{request.isbn}' already exists."
+            context.set_code(grpc.StatusCode.ALREADY_EXISTS)
+            context.set_details(response.message)
+            
         except Exception as e:
             response.success = False
-            response.message = f"Failed to create book: {e}"
-            response.entity_id = 0
+            response.message = f"An unexpected database error occurred: {e}"
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(response.message)
             
         return response
         
     # ----------------------------------------------------
-    # C. Inventory Lookup (Book Search)
+    # C. Inventory Lookup (Book Search - RPC: Server Stream)
     # ----------------------------------------------------
     def SearchBooks(self, request, context):
-        """
-        RPC: Searches books and streams results back.
-        """
+        """Searches books and streams results back to the client."""
         query = request.query
         
         # Filter logic: search for query in title OR author
@@ -105,10 +122,14 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
                 isbn=book.isbn,
                 is_available=book.is_available
             )
+    
+    # NOTE: You would implement other methods like GetBook, UpdateBookAvailability, etc. here.
+
 
 # ----------------------------------------------------
-# D. Server Setup
+# 3. Server Initialization
 # ----------------------------------------------------
+
 def serve():
     """Starts the gRPC server on the designated port."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -129,10 +150,9 @@ def serve():
 
 
 if __name__ == '__main__':
-    # Add a check here for Django DB connection before starting the server
-    from django.db.utils import OperationalError
+    # Initial check to catch common database errors before starting the server
     try:
-        # Simple test to ensure the database connection is alive
+        # Simple test to ensure the database connection is alive before serving requests
         Book.objects.exists()
         serve()
     except OperationalError as e:
