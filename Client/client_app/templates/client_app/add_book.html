@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Library Management</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/addbook.css' %}"> </head>
+<body>
+    <div class="login-container dashboard-container">
+        
+        <div class="header-controls" style="justify-content: space-between;">
+            <div class="header" style="text-align: left;">
+                <h1>📚 Add New Book</h1>
+                <p>Logged in as: **{{ username }}**</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="nav-button">
+                <i aria-hidden="true">🏠</i> Dashboard
+            </a>
+        </div>
+
+        <hr>
+
+        {% if context.error_message %}
+            <div class="message-container error-message">
+                {{ context.error_message }}
+            </div>
+        {% elif context.message %}
+            <div class="message-container {% if context.success %}success-message{% else %}error-message{% endif %}">
+                {{ context.message }}
+            </div>
+        {% endif %}
+
+        <h2 class="form-section-title">Book Details</h2>
+
+        <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data" class="add-book-form"> 
+            {% csrf_token %}
+
+            <div class="form-field">
+                <label for="id_title">Title *</label>
+                <input type="text" id="id_title" name="title" required placeholder="e.g., The Distributed System Handbook">
+            </div>
+
+            <div class="form-field">
+                <label for="id_author">Author *</label>
+                <input type="text" id="id_author" name="author" required placeholder="e.g., Jane Doe">
+            </div>
+
+            <div class="form-field">
+                <label for="id_isbn">ISBN (13-Digit) *</label>
+                <input type="text" id="id_isbn" name="isbn" required placeholder="e.g., 978-0123456789">
+            </div>
+
+            <div class="form-field">
+                <label for="id_total_copies">Total Copies in Stock *</label>
+                <input type="number" id="id_total_copies" name="total_copies" value="1" min="1" required>
+            </div>
+
+            <div class="form-field file-field">
+                <label for="id_image">Book Cover Image (Optional)</label>
+                <input type="file" id="id_image" name="image" accept="image/*">
+            </div>
+
+            <button type="submit" class="login-btn action-button-primary" style="width: 100%; margin-top: 25px;">
+                ➕ Save Book to Inventory
+            </button>
+        </form>
+
+    </div>
+</body>
+</html>

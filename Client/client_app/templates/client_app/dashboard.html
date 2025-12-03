@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -7,6 +8,18 @@
     <title>Librarian Dashboard | Inventory</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        /* ADDED: Minimal style for book cover consistency */
+        .book-cover {
+            width: 40px; /* Small size for the table row */
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        /* Style classes for status based on quantity */
+        .available-stock { color: green; font-weight: bold; }
+        .unavailable-stock { color: red; }
+    </style>
 </head>
 <body>
     <div class="login-container dashboard-container">
@@ -26,22 +39,22 @@
                     <i aria-hidden="true">🚪</i> Log Out
                 </a>
             </div>
-            </div>
+        </div>
 
         <hr>
         
         <div class="action-buttons">
-            <a href="" class="action-button-primary">
+            <a href="{% url 'add_book' %}" class="action-button-primary">
                 <i aria-hidden="true">➕</i> Add New Book
             </a>
-            </div>
+        </div>
 
         <h2>Search Inventory</h2>
         
         <form method="get" action="{% url 'dashboard' %}" class="search-area">
             <input type="text" name="q" 
-                   placeholder="Search Title, Author, or ISBN..." 
-                   value="{{ query|default:'' }}">
+                    placeholder="Search Title, Author, or ISBN..." 
+                    value="{{ query|default:'' }}">
             <button type="submit" class="login-btn" style="width: 150px;">🔍 Search</button>
         </form>
         
@@ -51,20 +64,39 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Title</th>
+                        <th>ID</th> 
+                        <th>Image</th> <th>Title</th>
                         <th>Author</th>
                         <th>ISBN</th>
-                        <th>Status</th>
-                    </tr>
+                        <th>Total Stock</th> <th>Available</th> <th>Actions</th> </tr>
                 </thead>
                 <tbody>
                     {% for book in book_results %}
                     <tr>
+                        <td>{{ book.id }}</td>
+
+                        <td>
+                            {% if book.image_url %}
+                            <img src="{{ MEDIA_URL }}{{ book.image_url }}" alt="{{ book.title }} Coverr" class="book-cover">
+                            {% else %}
+                            <i aria-hidden="true">🖼️</i>
+                            {% endif %}
+                        </td>
+                        
                         <td>{{ book.title }}</td>
                         <td>{{ book.author }}</td>
                         <td>{{ book.isbn }}</td>
-                        <td class="{% if book.is_available %}available{% else %}unavailable{% endif %}">
-                            {{ book.is_available|yesno:"✅ Available, 🚫 Loaned" }}
+                        
+                        <td>{{ book.total_copies }}</td> <td class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
+                            {{ book.available_copies }}
+                        </td>
+
+                        <td>
+                            {% if book.available_copies > 0 %}
+                            <a href="" class="action-link available-stock">Borrow</a>
+                            {% else %}
+                            <a href="{% url 'return_book' %}?book_id={{ book.id }}" class="action-link unavailable-stock">Return</a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

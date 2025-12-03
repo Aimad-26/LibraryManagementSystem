@@ -137,4 +137,51 @@ def staff_profile(request: HttpRequest):
         'username': request.session.get('username'),
         'email': request.session.get('email', 'Update your email address'), 
         'staff_id': staff_id,
-        'title':
+        'title': "Librarian Profile"
+    }
+    
+    if request.method == 'POST':
+        
+        new_username = request.POST.get('new_username', context['username']) 
+        new_email = request.POST.get('new_email', context['email'])
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('new_password', '')
+        
+        # 2. Basic Validation: Must supply current password
+        if not current_password:
+            context['error_message'] = "Security Check: You must enter your current password to save any changes."
+            context['username'] = new_username 
+            context['email'] = new_email
+            return render(request, 'client_app/staff_profile.html', context)
+
+        # 3. Call gRPC RPC
+        client = LibraryClient()
+        response = client.update_staff_profile(
+            staff_id=staff_id,
+            new_username=new_username,
+            new_email=new_email,
+            current_password=current_password,
+            new_password=new_password
+        )
+
+        # 4. Process gRPC Response (StatusResponse)
+        if response.success:
+            context['success_message'] = response.message
+            
+            request.session['username'] = new_username
+            if new_email:
+                request.session['email'] = new_email
+
+            if new_password:
+                request.session.clear()
+                request.session['login_message'] = "Password changed successfully. Please log in again."
+                return redirect('staff_login')
+
+        else:
+            context['error_message'] = response.message
+            context['username'] = new_username 
+            context['email'] = new_email 
+
+
+    # Re-render the page with success/error messages
+    return render(request, 'client_app/staff_profile.html', context)
