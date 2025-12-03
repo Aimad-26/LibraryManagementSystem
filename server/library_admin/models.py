@@ -1,14 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.db import models
+
 class Book(models.Model):
     title = models.CharField(max_length=200, help_text="Title of the book.")
     author = models.CharField(max_length=100)
     isbn = models.CharField(max_length=13, unique=True, help_text="13-Digit ISBN.")
-    is_available = models.BooleanField(default=True)
+    total_copies = models.IntegerField(default=1, help_text="Total number of copies owned.")
+    available_copies = models.IntegerField(default=1, 
+                                           help_text="Number of copies currently available for loan.") # <-- SYNTAX FIX: Added closing parenthesis
+    image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
     
     def __str__(self):
-        return f"{self.title} by {self.author}"
+        return f"{self.title} by {self.author} (Available: {self.available_copies}/{self.total_copies})"
     
 class LibraryUser(models.Model):
     # Links to the built-in Django User model for authentication if needed for a separate login.

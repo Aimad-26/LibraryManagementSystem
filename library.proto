@@ -5,53 +5,59 @@ package library_system;
 // --- 1. Authentication Messages ---
 
 message LoginRequest {
-  string username = 1;
-  string password = 2;
+  string username = 1;
+  string password = 2;
 }
 
 message LoginResponse {
-  bool success = 1;
-  string user_id = 2; // Staff ID (Django User ID) returned on successful login
-  string message = 3; 
+  bool success = 1;
+  string user_id = 2; // Staff ID (Django User ID) returned on successful login
+  string message = 3; 
 }
 
 // --- 2. Inventory Messages ---
 
 message Book {
-  int32 id = 1;
-  string title = 2;
-  string author = 3;
-  string isbn = 4;
-  bool is_available = 5;
+  int32 id = 1;
+  string title = 2;
+  string author = 3;
+  string isbn = 4;
+  
+  // 🚀 UPDATED: Stock Quantity Fields (Replaced bool is_available) 🚀
+  int32 total_copies = 5;
+  int32 available_copies = 6;
+  
+  // 🚀 NEW: Field for the file path/URL 🚀
+  string image_url = 7; 
 }
 
 message SearchRequest {
-  string query = 1; // Used for search keywords in the dashboard
+  string query = 1; // Used for search keywords in the dashboard
 }
 
 // --- 3. Transaction Messages ---
 
 // Standard response used for confirmation, creation, or update status
 message StatusResponse {
-  bool success = 1;
-  string message = 2;
-  int32 entity_id = 3; // The ID of the item affected (Book ID, Loan ID, etc.)
+  bool success = 1;
+  string message = 2;
+  int32 entity_id = 3; // The ID of the item affected (Book ID, Loan ID, etc.)
 }
 
 // Request needed for loan transactions
 message BorrowRequest {
-  string member_id = 1;  // The ID of the LibraryUser (Patron)
-  int32 book_id = 2;     // The ID of the Book being borrowed/returned
+  string member_id = 1;  // The ID of the LibraryUser (Patron)
+  int32 book_id = 2;     // The ID of the Book being borrowed/returned
 }
 
 // --- 4. Profile Update Message (Librarian/Staff) ---
 
 message UpdateProfileRequest {
-  string staff_id = 1;       // Unique ID of the staff member making the request
-  string new_username = 2;
-  string new_email = 3;
-  string current_password = 4; // Required for security verification
-  string new_password = 5;     // Optional, for password change
+  string staff_id = 1;       // Unique ID of the staff member making the request
+  string new_username = 2;
+  string new_email = 3;
+  string current_password = 4; // Required for security verification
+  string new_password = 5;     // Optional, for password change
 }
 
 // ----------------------------------------------------
@@ -59,19 +65,21 @@ message UpdateProfileRequest {
 // ----------------------------------------------------
 
 service LibraryService {
-  // Authentication
-  rpc UserLogin (LoginRequest) returns (LoginResponse) {} 
-  
-  // Inventory Management (Implemented: CreateBook, SearchBooks)
-  rpc CreateBook (Book) returns (StatusResponse) {}
-  rpc SearchBooks (SearchRequest) returns (stream Book) {}
-  rpc GetBook (SearchRequest) returns (Book) {}
-  rpc UpdateBookAvailability (Book) returns (StatusResponse) {}
+  // Authentication
+  rpc UserLogin (LoginRequest) returns (LoginResponse) {} 
+  
+  // Inventory Management (Implemented: CreateBook, SearchBooks)
+  rpc CreateBook (Book) returns (StatusResponse) {}
+  rpc SearchBooks (SearchRequest) returns (stream Book) {}
+  // ⚠️ NOTE: GetBook and UpdateBookAvailability RPCs may need review, 
+  // as they rely on the old Book structure (if you use them).
+  rpc GetBook (SearchRequest) returns (Book) {} 
+  rpc UpdateBookAvailability (Book) returns (StatusResponse) {}
 
-  // Loan Management (Next steps)
-  rpc BorrowBook (BorrowRequest) returns (StatusResponse) {}
-  rpc ReturnBook (BorrowRequest) returns (StatusResponse) {}
-  
-  // Staff Management (Implemented for Profile Update)
-  rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse) {}
+  // Loan Management (Next steps)
+  rpc BorrowBook (BorrowRequest) returns (StatusResponse) {}
+  rpc ReturnBook (BorrowRequest) returns (StatusResponse) {}
+  
+  // Staff Management (Implemented for Profile Update)
+  rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse) {}
 }
