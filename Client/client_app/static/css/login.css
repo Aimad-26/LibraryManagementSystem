@@ -115,14 +115,17 @@ body {
         padding: 20px;
     }
 } */
- :root {
-    --primary-color: #00b894;   /* teal like the Se connecter button */
-    --secondary-color: #c0392b; /* dark red for Create account */
-    --text-color: #1f2933;
-    --muted-text: #6b7280;
-    --error-bg: #fde2e1;
-    --error-text: #b91c1c;
+:root {
+    --primary-btn: #00b894;      /* teal, like image 2 */
+    --secondary-btn: #8b0000;    /* dark red */
+    --text-main: #111827;
+    --text-muted: #6b7280;
     --card-bg: #ffffff;
+    --primary-btn: #007bff;     /* Blue like your screenshot */
+    --secondary-btn: #8b0000;   /* Dark red (you can change) */
+}
+.primary-btn {
+    margin-bottom: 14px !important;
 }
 
 /* Reset */
@@ -138,49 +141,75 @@ body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     min-height: 100vh;
     position: relative;
-    color: var(--text-color);
+}
+/* Buttons – same width/height as image 2 */
+.login-btn {
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.12s ease;
 }
 
-/* Background image */
-.bg-image {
+/* FIRST button (space below) */
+.primary-btn {
+    background: var(--primary-btn);
+    color: #ffffff;
+    margin-bottom: 14px !important;     /* ← added spacing */
+}
+
+.primary-btn:hover {
+    background: #0069d9;
+}
+
+/* SECOND button */
+.secondary-btn {
+    background: var(--secondary-btn);
+    color: #ffffff;
+}
+
+.secondary-btn:hover {
+    background: #660000;
+}
+
+/* Overlay only for login page */
+.login-page::before {
+    content: "";
     position: fixed;
     inset: 0;
-    background-image: url("../images/cinema_bg.jpg"); /* change to your image */
-    background-size: cover;
-    background-position: center;
-    z-index: -2;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 0;
 }
 
-.bg-overlay {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(to right, rgba(0,0,0,0.75), rgba(0,0,0,0.4));
-    z-index: -1;
-}
 
-/* Center card */
+/* Center the card */
 .page-wrapper {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px;
+    position: relative;
+    z-index: 1;   /* above dark overlay */
 }
 
-/* Card */
+/* White card like the example */
 .login-container {
     width: 100%;
-    max-width: 460px;
+    max-width: 520px;                 /* same feeling as image 2 */
     background: var(--card-bg);
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
-    padding: 32px 32px 24px;
+    border-radius: 20px;
+    padding: 32px 46px 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
 
-/* Header */
+/* Header / logo */
 .header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 26px;
 }
 
 .logo-area {
@@ -188,41 +217,46 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .logo-img {
-    width: 64px;
-    height: 64px;
+    width: 410px;         /* size of ISMAC logo in image 2 */
+    height: auto;
     object-fit: contain;
 }
 
+/* “ADIA” text under logo */
 .logo-text {
-    font-size: 1.6rem;
-    letter-spacing: 0.25rem;
-    font-weight: 600;
-    color: #e67e22;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1d4ed8;       /* blue check + ADIA */
 }
 
+/* Titles */
 .page-title {
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     font-weight: 600;
-    margin-bottom: 4px;
+    line-height: 1.35;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .page-subtitle {
-    font-size: 0.9rem;
-    color: var(--muted-text);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 22px;
 }
 
 /* Error message */
 .error-message {
-    background: var(--error-bg);
-    color: var(--error-text);
+    background: #fdecea;
+    color: #b91c1c;
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     font-size: 0.9rem;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 /* Form */
@@ -230,38 +264,42 @@ form {
     width: 100%;
 }
 
+/* Label + input */
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
+    text-align: left;
 }
 
 .form-group label {
     display: block;
     font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main);
     margin-bottom: 6px;
 }
 
+/* Inputs: flat + thin border like image 2 */
 .form-group input[type="text"],
 .form-group input[type="password"] {
     width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #d1d5db;
+    padding: 10px 10px;
     font-size: 0.95rem;
     outline: none;
-    transition: border 0.15s ease, box-shadow 0.15s ease;
 }
 
 .form-group input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+    border-color: var(--primary-btn);
+    box-shadow: 0 0 0 1px rgba(0, 184, 148, 0.3);
 }
 
-/* Checkbox + forgot link */
+/* Checkbox + forgot password */
 .form-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin: 8px 0 20px;
     font-size: 0.85rem;
 }
 
@@ -269,8 +307,8 @@ form {
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--text-muted);
     cursor: pointer;
-    color: var(--muted-text);
 }
 
 .checkbox-label input {
@@ -279,8 +317,8 @@ form {
 }
 
 .forgot-link {
-    text-decoration: none;
     color: #0ea5e9;
+    text-decoration: none;
     font-weight: 500;
 }
 
@@ -288,47 +326,48 @@ form {
     text-decoration: underline;
 }
 
-/* Buttons */
+/* Buttons – same width/height as in image 2 */
 .login-btn {
     width: 100%;
     border: none;
-    border-radius: 999px;
-    padding: 10px 16px;
-    font-size: 0.95rem;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     margin-top: 6px;
-    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+    transition: background 0.15s ease, transform 0.08s ease,
+                box-shadow 0.12s ease;
 }
 
 .primary-btn {
-    background: var(--primary-color);
+    background: var(--primary-btn);
     color: #ffffff;
 }
 
 .primary-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
     background: #00a384;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
 
 .secondary-btn {
-    background: var(--secondary-color);
+    background: var(--secondary-btn);
     color: #ffffff;
 }
 
 .secondary-btn:hover {
+    background: #660000;
     transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
-    background: #a83226;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
 
 /* Footer */
 .footer-text {
-    margin-top: 18px;
+    margin-top: 20px;
+    font-size: 0.85rem;
     text-align: center;
-    font-size: 0.8rem;
-    color: var(--muted-text);
+    color: var(--text-muted);
 }
 
 .footer-link {
@@ -344,11 +383,11 @@ form {
 /* Responsive */
 @media (max-width: 480px) {
     .login-container {
-        padding: 24px 18px 18px;
-        border-radius: 12px;
+        padding: 24px 18px 20px;
+        border-radius: 16px;
     }
 
     .page-title {
-        font-size: 1rem;
+        font-size: 1.2rem;
     }
 }

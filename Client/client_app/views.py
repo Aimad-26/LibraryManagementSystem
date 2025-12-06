@@ -11,11 +11,15 @@ from .grpc_client import LibraryClient
 # ----------------------------------------------------
 
 def staff_login(request: HttpRequest):
-    # ... (Implementation remains the same) ...
+    # If already logged in
     if request.session.get('staff_id'):
-        return redirect('dashboard') 
+        return redirect('dashboard')
 
     message = request.session.pop('login_message', None)
+
+    # 🔹 Add your media images here
+    bg_image = "book_covers/Background.jpg"
+    logo_image = "book_covers/ismac_logo.png"
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -25,13 +29,19 @@ def staff_login(request: HttpRequest):
         auth_response = client.staff_login(username, password)
 
         if auth_response.success:
-            request.session['staff_id'] = auth_response.user_id 
+            request.session['staff_id'] = auth_response.user_id
             request.session['username'] = username
             return redirect('dashboard')
         else:
             message = auth_response.message
-            
-    return render(request, 'client_app/login.html', {'message': message})
+
+    context = {
+        'message': message,
+        'bg_image': bg_image,
+        'logo_image': logo_image,
+    }
+    return render(request, 'client_app/login.html', context)
+
 
 def staff_logout(request: HttpRequest):
     request.session.clear()
