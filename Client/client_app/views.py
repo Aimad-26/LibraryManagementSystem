@@ -54,6 +54,9 @@ def staff_logout(request: HttpRequest):
 # ----------------------------------------------------
 
 def dashboard(request: HttpRequest):
+    # 🔹 Add your media images here
+    bg_image = "book_covers/Background.jpg"
+    logo_image = "book_covers/ismac_logo.png"
     # ... (Implementation remains the same) ...
     staff_id = request.session.get('staff_id')
     if not staff_id:

@@ -8,58 +8,164 @@
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <style>
-        /* Minimal style adjustments specific to the profile page, usually belongs in dashboard.css */
-        .message-container {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            text-align: center;
-        }
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .security-check {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        /* Style for the input fields to match the look */
-        .profile-form input[type="text"],
-        .profile-form input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box; /* Ensures padding doesn't affect total width */
-        }
-    </style>
+    /* Page background like image 2/3 */
+    .profile-page {
+        background-color: #f3f4f6;
+    }
+
+    /* Override login-container for dashboard pages */
+    .dashboard-container {
+        max-width: 1100px;
+        margin: 32px auto 40px;
+        background: transparent;
+        box-shadow: none;
+        padding: 0 24px;
+    }
+
+    /* Top bar */
+    .profile-header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 4px 8px;
+        margin-bottom: 8px;
+    }
+
+    .profile-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .profile-logo-text {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .profile-header-subtitle {
+        font-size: 0.95rem;
+        color: #6b7280;
+    }
+
+    .profile-header-id {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    /* Link button to dashboard (you already have .profile-btn from dashboard.css) */
+    .profile-btn {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+
+    .profile-main {
+        margin-top: 12px;
+    }
+
+    /* Message containers (success / error) */
+    .message-container {
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    /* Cards like ISMAC profile sections */
+    .profile-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 20px 24px 24px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        margin-bottom: 24px;
+    }
+
+    .profile-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    /* Inputs */
+    .profile-form input[type="text"],
+    .profile-form input[type="password"] {
+        width: 100%;
+        padding: 10px 10px;
+        margin-bottom: 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 0.95rem;
+    }
+
+    .profile-form input[type="text"]:focus,
+    .profile-form input[type="password"]:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px rgba(59,130,246,0.25);
+    }
+
+    .profile-form label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .security-check {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 10px 12px;
+        border-radius: 6px;
+        margin: 4px 0 16px;
+        font-size: 0.9rem;
+    }
+
+    /* Save button area */
+    .profile-actions {
+        text-align: right;
+        margin-bottom: 8px;
+    }
+
+    .profile-save-btn {
+        width: auto;
+        min-width: 180px;
+        padding-inline: 24px;
+        border-radius: 999px;
+    }
+
+    /* Keep existing login-btn styling from login.css for colors */
+</style>
+
 </head>
-<body>
+<body class="profile-page">
     <div class="login-container dashboard-container">
-        
-        <div class="header-controls" style="justify-content: space-between;">
-            <div class="header" style="text-align: left;">
-                <h1>✅👤 Edit Profile</h1>
-                <p>Staff ID: **{{ staff_id }}**</p>
+
+        <!-- Top bar (left title + Dashboard button on the right) -->
+        <div class="profile-header-bar">
+            <div class="profile-header-left">
+                <div class="profile-logo-text">ADIA Library</div>
+                <div class="profile-header-subtitle">Edit Profile</div>
+                <div class="profile-header-id">Staff ID: <strong>{{ staff_id }}</strong></div>
             </div>
             <a href="{% url 'dashboard' %}" class="nav-button profile-btn">
-                <i aria-hidden="true">🏠</i> Dashboard
+                🏠 Dashboard
             </a>
         </div>
 
-        <hr>
-
+        <!-- Messages -->
         {% if error_message %}
             <div class="message-container error-message">
                 **RPC Error:** {{ error_message }}
@@ -70,33 +176,50 @@
             </div>
         {% endif %}
 
-        <form method="post" action="{% url 'staff_profile' %}" class="profile-form">
-            {% csrf_token %}
+        <!-- Main content -->
+        <main class="profile-main">
 
-            <h2>CONNECTION DETAILS</h2>
-            
-            <label for="id_new_username">Username</label>
-            <input type="text" id="id_new_username" name="new_username" value="{{ username }}" required>
+            <form method="post" action="{% url 'staff_profile' %}" class="profile-form">
+                {% csrf_token %}
 
-            <label for="id_new_email">Email Address</label>
-            <input type="text" id="id_new_email" name="new_email" value="{{ email }}" placeholder="Update your email address">
-            
+                <!-- CARD 1: Connection details -->
+                <section class="profile-card">
+                    <h2 class="profile-card-title">CONNECTION DETAILS</h2>
 
-            <h2>SECURITY SETTINGS</h2>
-            
-            <label for="id_new_password">New Password (Optional)</label>
-            <input type="password" id="id_new_password" name="new_password" placeholder="Leave empty to keep current password">
-            
-            <div class="security-check">
-                **Security Check:** You must enter your current password to save any changes.
-            </div>
+                    <label for="id_new_username">Username</label>
+                    <input type="text" id="id_new_username" name="new_username"
+                           value="{{ username }}" required>
 
-            <label for="id_current_password">Current Password *</label>
-            <input type="password" id="id_current_password" name="current_password" required>
+                    <label for="id_new_email">Email Address</label>
+                    <input type="text" id="id_new_email" name="new_email"
+                           value="{{ email }}" placeholder="Update your email address">
+                </section>
 
-            <button type="submit" class="login-btn" style="width: 100%; margin-top: 20px;">Save Changes</button>
-        </form>
+                <!-- CARD 2: Security settings -->
+                <section class="profile-card">
+                    <h2 class="profile-card-title">SECURITY SETTINGS</h2>
 
+                    <label for="id_new_password">New Password (Optional)</label>
+                    <input type="password" id="id_new_password" name="new_password"
+                           placeholder="Leave empty to keep current password">
+
+                    <div class="security-check">
+                        <strong>Security Check:</strong> You must enter your current password to save any changes.
+                    </div>
+
+                    <label for="id_current_password">Current Password *</label>
+                    <input type="password" id="id_current_password" name="current_password" required>
+                </section>
+
+                <!-- Save button -->
+                <div class="profile-actions">
+                    <button type="submit" class="login-btn profile-save-btn">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+
+        </main>
     </div>
 </body>
 </html>

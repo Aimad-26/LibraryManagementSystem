@@ -1,5 +1,5 @@
 
-{% load static %}
+<!-- {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +20,7 @@
         .available-stock { color: green; font-weight: bold; }
         .unavailable-stock { color: red; }
     </style>
-</head>
+</head> 
 <body>
     <div class="login-container dashboard-container">
         
@@ -108,4 +108,206 @@
 
     </div>
 </body>
+</html> -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librarian Dashboard | Inventory</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=2">
+
+    <style>
+        /* keep your extra styles */
+        .book-cover {
+            width: 40px;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .available-stock { color: green; font-weight: bold; }
+        .unavailable-stock { color: red; }
+    </style>
+</head>
+<body class="dashboard-page">
+
+
+<div class="dashboard-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="dashboard-sidebar">
+       <div class="sidebar-logo">
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="ISMAC Logo" class="logo-img">
+        </div>
+        <nav class="sidebar-nav">
+            <p class="sidebar-section-label">LIBRARY</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link active">
+                📊 Dashboard
+            </a>
+            <a href="{% url 'add_book' %}" class="sidebar-link">
+                ➕ Add New Book
+            </a>
+            <a href="#" class="sidebar-link">
+                📖 Borrowed Books
+            </a>
+            <a href="#" class="sidebar-link">
+                🔁 Returns
+            </a>
+            <a href="#" class="sidebar-link">
+                📈 Reports
+            </a>
+
+            <p class="sidebar-section-label">ACCOUNT</p>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link">
+                👤 My Profile
+            </a>
+        </nav>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT -->
+    <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+
+            <!-- TOP SEARCH BAR + USER -->
+            <header class="topbar">
+                <div class="topbar-search">
+                    <input type="text" placeholder="Search in dashboard..." />
+                </div>
+                <div class="topbar-user">
+                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
+                    <span class="topbar-avatar">👤</span>
+                </div>
+            </header>
+
+            <!-- HERO BANNER (like Careflow purple block) -->
+            <section class="hero-banner">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">Dashboard</p>
+                    <h1 class="hero-title">👋 Bonjour, {{ username|default:"Librarian" }} !</h1>
+                    <p class="hero-subtitle">
+                        Welcome to your library space. Manage books, track loans, and keep your catalog organized.
+                    </p>
+                </div>
+                <div class="hero-actions">
+                    <!-- re-use your Add Book action here -->
+                    <a href="{% url 'add_book' %}" class="hero-primary-btn">
+                        ➕ Add New Book
+                    </a>
+
+                    <!-- keep real Profile/Logout buttons from your original code -->
+                    <div class="hero-user-controls">
+                        <a href="{% url 'staff_profile' %}" class="nav-button profile-btn">
+                            ⚙️ Profile
+                        </a>
+                        <a href="{% url 'staff_logout' %}" class="nav-button logout-btn">
+                            🚪 Log Out
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SUMMARY CARDS ROW (visual only, no backend yet) -->
+            <section class="summary-row">
+                <article class="summary-card">
+                    <h3>Books in Catalog</h3>
+                    <p class="summary-number">{{ book_results|length|default:"0" }}</p>
+                    <p class="summary-caption">Total books found in current search.</p>
+                </article>
+
+                <article class="summary-card">
+                    <h3>Available Now</h3>
+                    <p class="summary-number">
+                        {{ book_results|length|default:"0" }}
+                    </p>
+                    <p class="summary-caption">Copies currently available (visual placeholder).</p>
+                </article>
+
+                <article class="summary-card">
+                    <h3>Notifications</h3>
+                    <p class="summary-number">0</p>
+                    <p class="summary-caption">No notifications for now.</p>
+                </article>
+            </section>
+
+            <!-- CARD: SEARCH + ADD BUTTON (your real form) -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Search Inventory</h2>
+                    <div class="action-buttons">
+                        <a href="{% url 'add_book' %}" class="action-button-primary">
+                            ➕ Add New Book
+                        </a>
+                    </div>
+                </div>
+
+                <form method="get" action="{% url 'dashboard' %}" class="search-area">
+                    <input type="text" name="q" 
+                           placeholder="Search Title, Author, or ISBN..." 
+                           value="{{ query|default:'' }}">
+                    <button type="submit" class="login-btn search-btn">🔍 Search</button>
+                </form>
+            </section>
+
+            <!-- CARD: RESULTS TABLE (unchanged content) -->
+            <section class="dashboard-section">
+                {% if book_results %}
+                    <h3 class="section-subtitle">Found {{ book_results|length }} Books:</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>ISBN</th>
+                                    <th>Total Stock</th>
+                                    <th>Available</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in book_results %}
+                                <tr>
+                                    <td>{{ book.id }}</td>
+                                    <td>
+                                        {% if book.image_url %}
+                                            <img src="{{ MEDIA_URL }}{{ book.image_url }}" alt="{{ book.title }} Coverr" class="book-cover">
+                                        {% else %}
+                                            <i aria-hidden="true">🖼️</i>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ book.title }}</td>
+                                    <td>{{ book.author }}</td>
+                                    <td>{{ book.isbn }}</td>
+                                    <td>{{ book.total_copies }}</td>
+                                    <td class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
+                                        {{ book.available_copies }}
+                                    </td>
+                                    <td>
+                                        {% if book.available_copies > 0 %}
+                                            <a href="" class="action-link available-stock">Borrow</a>
+                                        {% else %}
+                                            <a href="{% url 'return_book' %}?book_id={{ book.id }}" class="action-link unavailable-stock">Return</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="no-results">No results found for query "{{ query }}".</p>
+                {% endif %}
+            </section>
+
+        </div>
+    </main>
+
+</div>
+
+</body>
 </html>
+
