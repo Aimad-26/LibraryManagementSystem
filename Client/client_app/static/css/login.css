@@ -1,4 +1,4 @@
-/* In Client/client_app/static/css/login.css */
+/* In Client/client_app/static/css/login.css 
 
 :root {
     --primary-color: #007bff;
@@ -6,13 +6,13 @@
     --background-light: #f8f9fa;
     --card-bg: #ffffff;
     --text-dark: #343a40;
-    --book-color: #e0f2f1; /* Light turquoise for subtle library feel */
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+    --book-color: #e0f2f1;  Light turquoise for subtle library feel 
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+} 
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--book-color); /* Subtle hint of a book/page background */
+    background-color: var(--book-color);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -100,18 +100,255 @@ body {
     background-color: #0056b3;
 }
 
-/* Optional: Subtle book icon using a pseudo-element */
+ Optional: Subtle book icon using a pseudo-element 
 .header h1::before {
-    content: '\2713'; /* Checkmark or suitable Unicode symbol */
+    content: '\2713'; Checkmark or suitable Unicode symbol
     color: var(--primary-color);
     margin-right: 8px;
 }
 
-/* Responsive adjustments */
+ Responsive adjustments 
 @media (max-width: 600px) {
     .login-container {
         width: 100%;
         margin: 20px;
         padding: 20px;
+    }
+} */
+ :root {
+    --primary-color: #00b894;   /* teal like the Se connecter button */
+    --secondary-color: #c0392b; /* dark red for Create account */
+    --text-color: #1f2933;
+    --muted-text: #6b7280;
+    --error-bg: #fde2e1;
+    --error-text: #b91c1c;
+    --card-bg: #ffffff;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    position: relative;
+    color: var(--text-color);
+}
+
+/* Background image */
+.bg-image {
+    position: fixed;
+    inset: 0;
+    background-image: url("../images/cinema_bg.jpg"); /* change to your image */
+    background-size: cover;
+    background-position: center;
+    z-index: -2;
+}
+
+.bg-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.75), rgba(0,0,0,0.4));
+    z-index: -1;
+}
+
+/* Center card */
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* Card */
+.login-container {
+    width: 100%;
+    max-width: 460px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    padding: 32px 32px 24px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.logo-img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.logo-text {
+    font-size: 1.6rem;
+    letter-spacing: 0.25rem;
+    font-weight: 600;
+    color: #e67e22;
+}
+
+.page-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.page-subtitle {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+}
+
+/* Error message */
+.error-message {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+/* Form */
+form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+/* Checkbox + forgot link */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    font-size: 0.85rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--muted-text);
+}
+
+.checkbox-label input {
+    width: 14px;
+    height: 14px;
+}
+
+.forgot-link {
+    text-decoration: none;
+    color: #0ea5e9;
+    font-weight: 500;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Buttons */
+.login-btn {
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: #ffffff;
+}
+
+.primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+    background: #00a384;
+}
+
+.secondary-btn {
+    background: var(--secondary-color);
+    color: #ffffff;
+}
+
+.secondary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+    background: #a83226;
+}
+
+/* Footer */
+.footer-text {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted-text);
+}
+
+.footer-link {
+    color: #0ea5e9;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 24px 18px 18px;
+        border-radius: 12px;
+    }
+
+    .page-title {
+        font-size: 1rem;
     }
 }

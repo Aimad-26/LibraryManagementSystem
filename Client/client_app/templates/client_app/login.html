@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<!-- <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,5 +38,89 @@
             </p>
         </form>
     </div>
+</body>
+</html> -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librarian Login | Book System</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+
+    <!-- Background image -->
+    <div class="bg-image" >
+        <img src="{{ MEDIA_URL }}{{ book.image_url }}" alt="{{ book.title }} Coverr" class="book-cover">
+    </div>
+
+    <div class="bg-overlay"></div>
+
+    <div class="page-wrapper">
+        <div class="login-container">
+            <div class="header">
+                <!-- Logo + title like the example -->
+                <div class="logo-area">
+                    <img src="{% static 'media/ismac_logo.png' %}" alt="ISMAC" class="logo-img">
+                    <h1 class="logo-text">ADIA</h1>
+                </div>
+                <h2 class="page-title">Library System Application Platform</h2>
+                <p class="page-subtitle">Access your Library account</p>
+            </div>
+
+            {% if message %}
+                <div class="error-message">{{ message }}</div>
+            {% endif %}
+
+            <!-- ⚠️ SAME form, ids, names and action -->
+            <form method="post" action="{% url 'staff_login' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="username">E-mail</label>
+                    <input type="text" id="username" name="username"
+                           placeholder="Entrez votre adresse e-mail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="Entrez votre mot de passe" required>
+                </div>
+
+                <div class="form-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-password">
+                        <span>Afficher le mot de passe</span>
+                    </label>
+                    <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+                </div>
+
+                <button type="submit" class="login-btn primary-btn">Se connecter</button>
+<br>
+                <button type="button" class="login-btn secondary-btn">
+                    Créer votre compte VGC
+                </button>
+
+                <p class="footer-text">
+                    Développé par <a href="#" class="footer-link">ADIA</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Afficher / masquer le mot de passe
+        const showPasswordCheckbox = document.getElementById('show-password');
+        const passwordInput = document.getElementById('password');
+
+        if (showPasswordCheckbox && passwordInput) {
+            showPasswordCheckbox.addEventListener('change', () => {
+                passwordInput.type = showPasswordCheckbox.checked ? 'text' : 'password';
+            });
+        }
+    </script>
 </body>
 </html>
