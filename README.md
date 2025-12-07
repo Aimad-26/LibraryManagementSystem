@@ -1,44 +1,46 @@
-Library Management System
+# 📚 Library Management System
 
-A modern, distributed library management application built using Django, gRPC, and Python.
-This project demonstrates a clean client–server architecture designed for scalable library operations such as book management, user authentication, borrowing workflows, and administrative tasks.
+A modern, distributed library management application built with **Django**, **gRPC**, and **Python**.
 
-Features
-Authentication & User Management
+This project demonstrates a clean **client–server architecture** designed to support scalable library operations such as book management, user authentication, borrowing workflows, and administrative tasks.
 
-Secure login system using Django authentication
+---
 
-Role-based access: Librarian, Admin
+## 🚀 Features
 
-Superuser account for full system control
+### 🔐 Authentication & User Management
+- Secure login system powered by Django.
+- Role-based access: **Librarian**, **Admin**.
+- Superuser account with full system control.
 
-Book & Library Operations
+### 📘 Book & Library Operations
+- Add, edit, and delete books.
+- Borrow and return workflows.
+- Real-time status updates via gRPC.
+- Tracking of book availability and history.
 
-Add, edit, delete books
+### 🖧 Client–Server Architecture
+- **Server:** Django + gRPC backend handling core logic.
+- **Client:** Frontend application communicating through gRPC.
+- Ensures fast, reliable, and structured communication between components.
 
-Borrow and return operations
+### 🗄️ Database Support
+- Integrated **MySQL** database for persistent data storage.
+- Fully managed via Django ORM and migrations.
 
-Real-time status updates via gRPC
+---
 
-Book availability and history tracking
+## 🛠️ Technologies Used
 
-Client–Server Architecture
+| Technology | Purpose |
+|-----------|---------|
+| **Django** | Web framework & authentication system |
+| **gRPC** | High-performance communication layer |
+| **Protocol Buffers** | Typed communication schema |
+| **MySQL** | Main database for library records |
+| **Python 3.x** | Core programming language |
 
-Server: Django + gRPC backend handling business logic
+---
 
-Client: Frontend interface communicating with the server through gRPC
+## 📁 Project Structure (Example)
 
-Ensures fast, reliable, and structured communication
-
-Database Support
-
-MySQL integration for persistent storage
-
-Fully managed by Django ORM and migrations
-Technologies Used
-Technology	Purpose
-Django	Web framework + authentication system
-gRPC	High-performance communication between client and server
-Protocol Buffers	Strict, typed communication schema
-MySQL	Main database for library records
-Python 3.x	Core programming language
