@@ -60,12 +60,11 @@ class LibraryClient:
             return []
 
     # ----------------------------------------------------
-    # C. Inventory Management (Create Book) 🚀 FINAL ADDITION 🚀
+    # C. Inventory Management (Create Book)
     # ----------------------------------------------------
     def create_book(self, title, author, isbn, total_copies, image_path=None):
         """Calls the remote CreateBook RPC on the server to add a new book."""
         
-        # NOTE: Available copies is set on the server; we only pass the total.
         book_request = library_pb2.Book(
             title=title,
             author=author,
@@ -89,12 +88,14 @@ class LibraryClient:
             )
 
     # ----------------------------------------------------
-    # D. Staff Management (Update Profile)
+    # D. Staff Profile (Update & Creation)
     # ----------------------------------------------------
+    
+    # D1. Base RPC Wrapper for Update (Used by create_user)
     def update_staff_profile(self, staff_id, new_username, new_email, current_password, new_password=""):
         """
-        Calls the remote UpdateStaffProfile RPC to change staff credentials.
-        Returns a StatusResponse.
+        Calls the remote UpdateStaffProfile RPC to change staff credentials 
+        or trigger user creation (if staff_id is empty).
         """
         request = library_pb2.UpdateProfileRequest(
             staff_id=str(staff_id), 
@@ -118,18 +119,49 @@ class LibraryClient:
                 success=False, 
                 message=f"RPC Failed ({status_code.name}): {details}"
             )
-    # Dans client_app/grpc_client.py (Méthode à ajouter)
-
+            
+    # D2. Creation Wrapper (Uses update_staff_profile for detournement)
     def create_user(self, username, email, password):
-    
-    
-    # staff_id est vide pour signaler au serveur que c'est une création
-       return self.update_staff_profile(
-        staff_id="", 
-        new_username=username,
-        new_email=email,
-        current_password="", 
-        new_password=password 
-      )
+        """Crée un nouvel utilisateur staff en détournant le RPC UpdateStaffProfile."""
+        
+        return self.update_staff_profile(
+            staff_id="", 
+            new_username=username,
+            new_email=email,
+            current_password="", 
+            new_password=password 
+        )
 
-# Note : Assurez-vous que votre méthode update_staff_profile existe et gère les arguments.
+    # ----------------------------------------------------
+    # E. User Management (List, Get, Delete) 🚀 NOUVEAU 🚀
+    # ----------------------------------------------------
+    
+    def get_all_users(self):
+        """Appelle le RPC GetAllUsers pour récupérer tous les utilisateurs."""
+        request = library_pb2.SearchRequest(query="")
+        try:
+            return list(self.stub.GetAllUsers(request))
+        except grpc.RpcError as e:
+            print(f"Error calling GetAllUsers RPC: {e.details()}")
+            return []
+
+    def get_user_details(self, user_id):
+        """Appelle le RPC GetUserDetail pour récupérer un seul utilisateur (pour l'édition)."""
+        request = library_pb2.UserIdRequest(user_id=str(user_id))
+        try:
+            response = self.stub.GetUserDetail(request)
+            if response and response.user_id:
+                return response
+            return None
+        except grpc.RpcError as e:
+            print(f"Error calling GetUserDetail RPC: {e.details()}")
+            return None
+            
+    def delete_user(self, user_id):
+        """Appelle le RPC DeleteUser pour désactiver un compte."""
+        request = library_pb2.UserIdRequest(user_id=str(user_id))
+        try:
+            return self.stub.DeleteUser(request)
+        except grpc.RpcError as e:
+            details = e.details()
+            return library_pb2.StatusResponse(success=False, message=f"Échec RPC: {details}")
