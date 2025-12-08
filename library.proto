@@ -33,7 +33,6 @@ message SearchRequest {
   string query = 1;
 }
 
-// --- 3. Transaction Messages ---
 
 message StatusResponse {
   bool success = 1;
@@ -46,7 +45,6 @@ message BorrowRequest {
   int32 book_id = 2;
 }
 
-// --- 4. Profile Update Message (Staff) ---
 
 message UpdateProfileRequest {
   string staff_id = 1;
@@ -55,11 +53,19 @@ message UpdateProfileRequest {
   string current_password = 4;
   string new_password = 5;
 }
+message UserDetail {
+    string user_id = 1;
+    string username = 2;
+    string email = 3;
+    bool is_staff = 4;
+    bool is_active = 5; // Utilisé pour l'état d'activation/désactivation
+    string date_joined = 6;
+    bool is_superuser = 7; // Utile pour restreindre les actions sur les superusers
+}
 
-// ----------------------------------------------------
-// SERVICE DEFINITION
-// ----------------------------------------------------
-
+message UserIdRequest {
+    string user_id = 1;
+}
 service LibraryService {
   rpc UserLogin (LoginRequest) returns (LoginResponse);
 
@@ -70,6 +76,8 @@ service LibraryService {
 
   rpc BorrowBook (BorrowRequest) returns (StatusResponse);
   rpc ReturnBook (BorrowRequest) returns (StatusResponse);
-
+  rpc GetAllUsers (SearchRequest) returns (stream UserDetail); 
+  rpc GetUserDetail (UserIdRequest) returns (UserDetail); 
+  rpc DeleteUser (UserIdRequest) returns (StatusResponse);
   rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse);
 }

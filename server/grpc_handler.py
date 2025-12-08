@@ -9,13 +9,10 @@ from django.db.models import Q
 from django.db.utils import OperationalError
 from django.db import IntegrityError
 from django.db import transaction
-# Imports your updated Book model
 
 # ----------------------------------------------------
 # 1. ROBUST DJANGO ENVIRONMENT SETUP 
 # ----------------------------------------------------
-
-# Set up Django environment and initialize
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))) 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'library_server.settings') 
 
@@ -30,10 +27,9 @@ except Exception as e:
 # ----------------------------------------------------
 # 2. Generated Code Imports (MUST BE AFTER django.setup())
 # ----------------------------------------------------
-from django.contrib.auth.models import User # Correct import for Staff management
+from django.contrib.auth.models import User
 from library_admin.models import Book # Assuming this model exists and is correct
 
-# 🚀 CRITICAL FIX: Re-adding the imports for gRPC stub files 🚀
 import library_pb2
 import library_pb2_grpc
 
@@ -124,7 +120,7 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
                 image_url=str(book.image) if book.image else ""
             )
 
-    # D. Staff Profile Update (MÉTHODE MAINTENANT CORRECTEMENT INDENTÉE)
+    # D. Staff Profile Update & Creation (Contournement)
     def UpdateStaffProfile(self, request, context):
         """
         Met à jour un profil existant (si staff_id est fourni) 
@@ -132,18 +128,14 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
         """
         response = library_pb2.StatusResponse()
 
-        # ----------------------------------------------------
         # 🚀 MODE CRÉATION D'UTILISATEUR (CONTOURNEMENT) 🚀
-        # ----------------------------------------------------
         if not request.staff_id:
             try:
-                # Validation des champs obligatoires pour la création
                 if not request.new_username or not request.new_password:
                     context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                     context.set_details("Nom d'utilisateur et mot de passe sont obligatoires pour la création.")
                     return library_pb2.StatusResponse(success=False, message="Nom d'utilisateur et mot de passe sont obligatoires.")
 
-                # Création de l'utilisateur staff via Django
                 user = User.objects.create_user(
                     username=request.new_username,
                     email=request.new_email,
@@ -155,7 +147,7 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
                 response.success = True
                 response.message = f"Utilisateur staff '{user.username}' créé avec succès."
                 response.entity_id = user.id
-                return response # Termine ici après la création
+                return response
 
             except IntegrityError:
                 context.set_code(grpc.StatusCode.ALREADY_EXISTS)
@@ -167,10 +159,7 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
                 context.set_details(f"Erreur interne lors de la création: {e}")
                 return library_pb2.StatusResponse(success=False, message=f"Échec de la création: {e}")
 
-        # ----------------------------------------------------
         # MODE MISE À JOUR DE PROFIL (LOGIQUE ORIGINALE)
-        # ----------------------------------------------------
-
         try:
             staff_id_int = int(request.staff_id) 
             user = User.objects.get(id=staff_id_int) 
@@ -214,6 +203,87 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
             response.message = "Failed to update profile due to a server error."
 
         return response
+        
+    # ----------------------------------------------------
+    # E. User Management: List
+    # ----------------------------------------------------
+    def GetAllUsers(self, request, context):
+        """Récupère et stream tous les utilisateurs staff/admin."""
+        
+        users = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).order_by('username')
+        
+        for user in users:
+            yield library_pb2.UserDetail(
+                user_id=str(user.id),
+                username=user.username,
+                email=user.email,
+                is_staff=user.is_staff,
+                is_active=user.is_active,
+                date_joined=user.date_joined.isoformat(),
+                is_superuser=user.is_superuser
+            )
+            
+    # ----------------------------------------------------
+    # F. User Management: Get Detail (for Editing) 🚀 AJOUTÉ 🚀
+    # ----------------------------------------------------
+    def GetUserDetail(self, request, context):
+        """Récupère les détails d'un seul utilisateur par ID."""
+        try:
+            user_id = int(request.user_id)
+            user = User.objects.get(id=user_id)
+
+            return library_pb2.UserDetail(
+                user_id=str(user.id),
+                username=user.username,
+                email=user.email,
+                is_staff=user.is_staff,
+                is_active=user.is_active,
+                date_joined=user.date_joined.isoformat(),
+                is_superuser=user.is_superuser
+            )
+        except User.DoesNotExist:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details("Utilisateur non trouvé.")
+            return library_pb2.UserDetail()
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(f"Erreur interne: {e}")
+            return library_pb2.UserDetail()
+
+    # ----------------------------------------------------
+    # G. User Management: Delete (Deactivate) 🚀 AJOUTÉ 🚀
+    # ----------------------------------------------------
+    def DeleteUser(self, request, context):
+        """Désactive (supprime logiquement) un compte utilisateur."""
+        response = library_pb2.StatusResponse()
+        try:
+            user_id = int(request.user_id)
+            user = User.objects.get(id=user_id)
+            
+            # SECURITÉ : Interdire la désactivation du Superutilisateur
+            if user.is_superuser:
+                response.success = False
+                response.message = "Impossible de désactiver un Superutilisateur."
+                context.set_code(grpc.StatusCode.PERMISSION_DENIED)
+                return response
+
+            # Suppression Logique (Mettre is_active à False)
+            user.is_active = False
+            user.save()
+
+            response.success = True
+            response.message = f"Utilisateur '{user.username}' (ID {user_id}) désactivé avec succès."
+            response.entity_id = user_id
+
+        except User.DoesNotExist:
+            response.success = False
+            response.message = "Utilisateur non trouvé."
+        except Exception as e:
+            response.success = False
+            response.message = f"Erreur de suppression: {e}"
+            context.set_code(grpc.StatusCode.INTERNAL)
+
+        return response
 
 
 # ----------------------------------------------------
@@ -240,6 +310,7 @@ def serve():
 if __name__ == '__main__':
     try:
         # Simple database check to ensure connection works before starting server
+        # La connexion à la base de données doit être valide ici.
         Book.objects.exists()
         serve()
     except OperationalError as e:
