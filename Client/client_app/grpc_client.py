@@ -48,6 +48,7 @@ class LibraryClient:
     # ----------------------------------------------------
     # B. Inventory Lookup (Search)
     # ----------------------------------------------------
+    
     def search_books(self, query):
         """Calls the remote SearchBooks RPC to retrieve a stream of books."""
         request = library_pb2.SearchRequest(query=query)
@@ -117,3 +118,18 @@ class LibraryClient:
                 success=False, 
                 message=f"RPC Failed ({status_code.name}): {details}"
             )
+    # Dans client_app/grpc_client.py (Méthode à ajouter)
+
+    def create_user(self, username, email, password):
+    
+    
+    # staff_id est vide pour signaler au serveur que c'est une création
+       return self.update_staff_profile(
+        staff_id="", 
+        new_username=username,
+        new_email=email,
+        current_password="", 
+        new_password=password 
+      )
+
+# Note : Assurez-vous que votre méthode update_staff_profile existe et gère les arguments.

@@ -135,6 +135,16 @@ def add_book(request: HttpRequest):
 # ----------------------------------------------------
 # C. Staff Profile Management (No Change)
 # ----------------------------------------------------
+# Dans client_app/views.py (Ajoutez la fonction)
+
+# In Client/client_app/views.py (within the create_user function)
+
+# In Client/client_app/views.py (The final version of the function)
+
+from django.shortcuts import render, redirect
+from django.http import HttpRequest
+from .grpc_client import LibraryClient
+# NOTE: Ensure LibraryClient is imported at the top of views.py
 
 def staff_profile(request: HttpRequest):
     """
@@ -198,3 +208,64 @@ def staff_profile(request: HttpRequest):
 
     # Re-render the page with success/error messages
     return render(request, 'client_app/staff_profile.html', context)
+def create_user(request: HttpRequest):
+    """
+    Handles the creation of a new Staff/Librarian account by calling the 
+    gRPC UpdateStaffProfile RPC in creation mode (staff_id="").
+    """
+    
+    context = {
+        'username_session': request.session.get('username'), 
+        'title': "Créer un nouvel utilisateur"
+    }
+
+    if request.method == 'POST':
+        
+        # 1. Récupération des données POST
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password_confirm = request.POST.get('password_confirm')
+        
+        # Conserver les données soumises pour pré-remplir le formulaire
+        context['username'] = username
+        context['email'] = email
+        
+        # 2. Validation côté client (Password Match)
+        if password != password_confirm:
+            context['success'] = False
+            context['message'] = "Erreur de validation : Les mots de passe ne correspondent pas."
+            return render(request, 'client_app/create_user.html', context)
+        
+        # 3. Validation minimum (champs requis)
+        if not username or not password:
+            context['success'] = False
+            context['message'] = "Nom d'utilisateur et mot de passe sont requis."
+            return render(request, 'client_app/create_user.html', context)
+
+        # 4. Appel gRPC pour la Création d'utilisateur (via le RPC détourné)
+        client = LibraryClient()
+        
+        # client.create_user appelle update_staff_profile avec staff_id=""
+        response = client.create_user(username, email, password)
+        
+        # 5. Traitement de la réponse gRPC (StatusResponse)
+        context['success'] = response.success
+        context['message'] = response.message
+        
+        if response.success:
+            # Si succès, effacer les données du formulaire
+            context['username'] = ''
+            context['email'] = ''
+            
+            # Définir le message de succès dans la session et rediriger vers la page de connexion
+            request.session['login_message'] = response.message + " Veuillez vous connecter."
+            return redirect('staff_login')
+        else:
+            # En cas d'échec (ex: doublon), les champs sont pré-remplis
+            pass
+            
+    return render(request, 'client_app/create_user.html', context)
+        # ... (Rest of the logic) ...
+
+
