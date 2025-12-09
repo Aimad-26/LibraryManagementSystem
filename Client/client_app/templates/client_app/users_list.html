@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Gestion Utilisateurs</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        /* Styles spécifiques pour le tableau et les actions */
+        .action-link { 
+            cursor: pointer; 
+            margin-right: 8px; 
+            padding: 5px 8px; 
+            border-radius: 4px; 
+            text-decoration: none;
+            font-size: 0.9em;
+            display: inline-block;
+        }
+        .edit-btn { background-color: #007bff; color: white; border: none; }
+        .delete-btn { background-color: #dc3545; color: white; border: none; }
+        .active-user { color: green; font-weight: bold; }
+        .inactive-user { color: red; }
+        .action-cell { display: flex; align-items: center; }
+        .action-cell form { margin: 0; }
+        .action-cell button { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="login-container dashboard-container">
+        
+        <div class="header-controls" style="justify-content: space-between;">
+            <h1>👥 Liste des Utilisateurs Staff</h1>
+            <a href="{% url 'dashboard' %}" class="nav-button">
+                <i aria-hidden="true">🏠</i> Tableau de Bord
+            </a>
+        </div>
+        
+        <div class="action-buttons" style="margin-bottom: 20px;">
+             <a href="{% url 'create_user' %}" class="action-button-primary" style="background-color: #3f72af;">
+                <i aria-hidden="true">👤</i> Créer un Utilisateur
+            </a>
+        </div>
+        
+
+        <hr>
+        
+        {% if message %}
+            <div class="message-container success-message">{{ message }}</div>
+        {% elif error_message %}
+            <div class="message-container error-message">{{ error_message }}</div>
+        {% endif %}
+
+
+        {% if user_results %}
+            <h3>Utilisateurs trouvés : {{ user_results|length }}</h3>
+            
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Statut</th>
+                        <th>Date de Création</th>
+                        <th style="width: 150px;">Actions</th> </tr>
+                </thead>
+                <tbody>
+                    {% for user in user_results %}
+                    <tr>
+                        <td>{{ user.user_id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email|default:"N/A" }}</td>
+                        <td>
+                            {% if user.is_superuser %}👑 Admin{% elif user.is_staff %}Staff{% else %}Standard{% endif %}
+                        </td>
+                        <td class="{% if user.is_active %}active-user{% else %}inactive-user{% endif %}">
+                            {{ user.is_active|yesno:"Actif, Désactivé" }}
+                        </td>
+                        <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                        <td class="action-cell">
+                            
+                            <a href="{% url 'edit_user' user_id=user.user_id %}" class="action-link edit-btn" title="Éditer">
+                                ✏️ Éditer
+                            </a>
+                            
+                            <form method="POST" action="{% url 'delete_user_action' user_id=user.user_id %}" style="display: inline;" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir désactiver (supprimer logiquement) l\'utilisateur {{ user.username }}? Cette action est irréversible.');">
+                                {% csrf_token %}
+                                
+                                <button type="submit" class="action-link delete-btn" 
+                                        {% if user.is_superuser or not user.is_active %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}
+                                        title="Désactiver l'utilisateur">
+                                    🗑️ Supprimer
+                                </button>
+                            </form>
+                            
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="text-align: center;">Aucun utilisateur staff trouvé.</p>
+        {% endif %}
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Gestion Utilisateurs</title>
+    
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/addbook.css' %}"> 
+    
+    <style>
+        .form-section-title { margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #333; }
+        .form-field { margin-bottom: 15px; }
+        .form-field input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .message-container { padding: 15px; margin-bottom: 20px; border-radius: 5px; font-weight: bold; text-align: center; }
+        .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        /* L'alerte de sécurité n'est plus nécessaire car le champ est retiré */
+    </style>
+</head>
+<body>
+    <div class="login-container dashboard-container">
+        
+        <div class="header-controls" style="justify-content: space-between;">
+            <div class="header" style="text-align: left;">
+                <h2>✏️ Éditer l'Utilisateur: **{{ user_details.username }}**</h2>
+                <p>ID: {{ user_id }} | Statut: {{ user_details.is_active|yesno:"Actif, Désactivé" }}</p>
+            </div>
+            <a href="{% url 'users_list' %}" class="nav-button">
+                <i aria-hidden="true">👥</i> Retour à la liste
+            </a>
+        </div>
+
+        <hr>
+
+        {% if error_message %}
+            <div class="message-container error-message">{{ error_message }}</div>
+        {% elif success_message %}
+            <div class="message-container success-message">{{ success_message }}</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'edit_user' user_id=user_id %}" class="edit-user-form"> 
+            {% csrf_token %}
+
+            <h3 class="form-section-title">Informations de Compte</h3>
+            
+            <div class="form-field">
+                <label for="id_username">Nom d'Utilisateur *</label>
+                <input type="text" id="id_username" name="username" value="{{ user_details.username }}" required>
+            </div>
+
+            <div class="form-field">
+                <label for="id_email">Email</label>
+                <input type="email" id="id_email" name="email" value="{{ user_details.email|default:'' }}">
+            </div>
+
+            <h3 class="form-section-title">Mise à Jour du Mot de Passe</h3>
+            <p>Remplissez le champ ci-dessous seulement si vous souhaitez changer le mot de passe de cet utilisateur.</p>
+            
+            <div class="form-field">
+                <label for="id_new_password">Nouveau Mot de Passe</label>
+                <input type="password" id="id_new_password" name="new_password">
+            </div>
+
+            <button type="submit" class="login-btn action-button-primary" style="width: 100%; margin-top: 25px;">
+                💾 Sauvegarder les Changements
+            </button>
+        </form>
+
+    </div>
+</body>
+</html>
