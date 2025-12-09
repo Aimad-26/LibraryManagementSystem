@@ -54,15 +54,13 @@ def staff_logout(request: HttpRequest):
 # B. Core Management Views 
 # ----------------------------------------------------
 
+# in client_app/views.py
+
 def dashboard(request: HttpRequest):
     # 🔹 Images used on both login & dashboard
     bg_image = "book_covers/Background.jpg"
     logo_image = "book_covers/ismac_logo.png"
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 6add19d3e81c20b6bd3a58d3b348213ac8d0655e
     staff_id = request.session.get('staff_id')
     if not staff_id:
         request.session['login_message'] = "Please log in to view the dashboard."
@@ -82,11 +80,7 @@ def dashboard(request: HttpRequest):
     }
     return render(request, 'client_app/dashboard.html', context)
 
-<<<<<<< HEAD
-# 🚀 ADD_BOOK VIEW WITH BACKGROUND IMAGE SUPPORT
-=======
-# 🚀 ADD_BOOK VIEW
->>>>>>> 6add19d3e81c20b6bd3a58d3b348213ac8d0655e
+
 def add_book(request: HttpRequest):
     staff_id = request.session.get('staff_id')
 
@@ -127,11 +121,6 @@ def add_book(request: HttpRequest):
 
         # gRPC Client Call
         client = LibraryClient()
-<<<<<<< HEAD
-=======
-        
-        # 3. Call gRPC RPC
->>>>>>> 6add19d3e81c20b6bd3a58d3b348213ac8d0655e
         response = client.create_book(
             title=title,
             author=author,
@@ -146,11 +135,7 @@ def add_book(request: HttpRequest):
 
         if response.success:
             context['message'] += f" (New ID: {response.entity_id})"
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> 6add19d3e81c20b6bd3a58d3b348213ac8d0655e
     return render(request, 'client_app/add_book.html', context)
 
 
