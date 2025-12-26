@@ -66,6 +66,28 @@
                             <a href="{% url 'edit_user' user_id=user.user_id %}" class="edit-btn">
                                 ✏️ Éditer
                             </a>
+                            <form method="POST"
+                                  action="{% url 'delete_user_action' user_id=user.user_id %}"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir désactiver l’utilisateur {{ user.username }} ?');">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="delete-btn"
+                                        {% if user.is_superuser or not user.is_active %}disabled{% endif %}>
+                                    🗑️ Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <p style="text-align:center; font-weight:600;">Aucun utilisateur staff trouvé.</p>
+    {% endif %}
+
+</div>
 </body>
 </html>
 
