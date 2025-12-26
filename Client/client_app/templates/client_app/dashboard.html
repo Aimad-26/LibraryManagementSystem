@@ -315,7 +315,9 @@
             <!-- RESULTS TABLE -->
             <section class="dashboard-section">
                 {% if book_results %}
-                    
+                    <h3 class="section-subtitle">
+                        Found {{ book_results|length }} Books:
+                    </h3>
 
                     <div class="table-wrapper">
                         <table>

@@ -233,6 +233,7 @@ def edit_user(request: HttpRequest, user_id):
     """Gère l'affichage du formulaire et la soumission de l'édition d'utilisateur."""
     if not request.session.get('staff_id'):
         return redirect('staff_login')
+        
     
     client = LibraryClient()
     context = {
