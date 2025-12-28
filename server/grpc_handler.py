@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.db.utils import OperationalError
 from django.db import IntegrityError
 from django.db import transaction
-
+from library_admin.models import Client as ClientModel
 # ----------------------------------------------------
 # 1. ROBUST DJANGO ENVIRONMENT SETUP 
 # ----------------------------------------------------
@@ -296,6 +296,31 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
 
         return response
+    def CreateClient(self, request, context):
+        try:
+            client = ClientModel.objects.create(
+                nom=request.nom,
+                email=request.email,
+                telephone=request.telephone,
+                adresse=request.adresse
+            )
+            return library_pb2.StatusResponse(success=True, message="Client créé avec succès", entity_id=client.id)
+        except Exception as e:
+            return library_pb2.StatusResponse(success=False, message=str(e))
+
+    def GetAllClients(self, request, context):
+        # On récupère tous les clients de la base de données
+        clients = ClientModel.objects.all()
+        for c in clients:
+            # On envoie chaque client un par un (streaming)
+            yield library_pb2.Client(
+                id=c.id,
+                nom=c.nom,
+                email=c.email,
+                telephone=c.telephone,
+                adresse=c.adresse,
+                date_inscription=c.date_inscription.strftime("%d/%m/%Y") # Format de date comme sur ta photo
+            )
 
 
 # ----------------------------------------------------
