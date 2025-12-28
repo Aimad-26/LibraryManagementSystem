@@ -80,4 +80,18 @@ service LibraryService {
   rpc GetUserDetail (UserIdRequest) returns (UserDetail); 
   rpc DeleteUser (UserIdRequest) returns (StatusResponse);
   rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse);
+  rpc CreateClient (Client) returns (StatusResponse);
+  rpc GetAllClients (SearchRequest) returns (stream Client);
+}
+message Client {
+    int32 id = 1;
+    string nom = 2;
+    string email = 3;
+    string telephone = 4;
+    string adresse = 5;
+    string date_inscription = 6;
+}
+
+message ClientIdRequest {
+    int32 client_id = 1;
 }
