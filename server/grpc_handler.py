@@ -2,31 +2,30 @@ import os
 import sys
 import django
 
-# 1. On définit le dossier racine pour que Python trouve 'server'
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# 1. On récupère le chemin du dossier /server/
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 2. On configure les réglages Django (vérifie que ton dossier s'appelle bien 'server')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
+# 2. On ajoute /server/ au PATH pour que Python voie 'library_server'
+sys.path.append(BASE_DIR)
 
-# 3. On initialise Django
-django.setup()
+# 3. ON UTILISE LE VRAI NOM DU DOSSIER : library_server
+os.environ['DJANGO_SETTINGS_MODULE'] = 'library_server.settings'
 
-# 4. MAINTENANT, tu peux importer tout le reste (gRPC et modèles)
+try:
+    django.setup()
+    print("✅ Django initialisé avec library_server.settings !")
+except Exception as e:
+    print(f"❌ Erreur : {e}")
+    sys.exit(1)
+
+# --- MAINTENANT LES AUTRES IMPORTS ---
 import grpc
 from concurrent import futures
-from django.contrib.auth import authenticate 
-from django.contrib.auth.hashers import check_password, make_password
-from django.db.models import Q 
-from django.db.utils import OperationalError
-from django.db import IntegrityError
-from django.db import transaction
-
-# Importation des fichiers générés par Proto
 import library_pb2
 import library_pb2_grpc
-
-# Importation de ton modèle Client
 from library_admin.models import Client as ClientModel
+
+# ... Le reste de ton code (Serveur gRPC)
 # ----------------------------------------------------
 # 1. ROBUST DJANGO ENVIRONMENT SETUP 
 # ----------------------------------------------------
