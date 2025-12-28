@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Client</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        .form-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-save { background-color: #3f72af; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        .btn-cancel { display: block; text-align: center; margin-top: 10px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>👤 Nouveau Client</h1>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Nom Complet</label>
+                <input type="text" name="nom" placeholder="Ex: Ahmed Alami" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="ahmed@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Téléphone</label>
+                <input type="text" name="telephone" placeholder="06XXXXXXXX">
+            </div>
+            <div class="form-group">
+                <label>Adresse</label>
+                <textarea name="adresse" rows="3" placeholder="Adresse complète..."></textarea>
+            </div>
+            <button type="submit" class="btn-save">💾 Enregistrer le Client</button>
+            <a href="{% url 'clients_list' %}" class="btn-cancel">Annuler</a>
+        </form>
+    </div>
+</body>
+</html>

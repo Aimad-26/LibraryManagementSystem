@@ -17,7 +17,5 @@ urlpatterns = [
     path('users/edit/<int:user_id>/', views.edit_user, name='edit_user'),
     path('users/delete/<int:user_id>/', views.delete_user_action, name='delete_user_action'),
     path('clients/', views.client_list, name='clients_list'),
-    path('clients/create/', views.votre_vue_creation, name='create_client'),
-    path('clients/edit/<int:client_id>/', views.votre_vue_edition, name='edit_client'), 
-    path('clients/delete/<int:client_id>/', views.votre_vue_suppression, name='delete_client_action')
+    path('clients/add/', views.create_client, name='create_client')
 ]

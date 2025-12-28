@@ -391,3 +391,30 @@ def client_list(request):
 
     # On ajoute 'query' au contexte pour le HTML
     return render(request, 'clients_list.html', {'clients': clients, 'query': query})
+def create_client(request):
+    if request.method == 'POST':
+        nom = request.POST.get('nom')
+        email = request.POST.get('email')
+        telephone = request.POST.get('telephone')
+        adresse = request.POST.get('adresse')
+
+        with grpc.insecure_channel('localhost:50051') as channel:
+            stub = library_pb2_grpc.LibraryServiceStub(channel)
+            try:
+                # Préparation de l'objet Client pour gRPC
+                nouveau_client = library_pb2.Client(
+                    nom=nom,
+                    email=email,
+                    telephone=telephone,
+                    adresse=adresse
+                )
+                # Appel du service CreateClient sur le serveur
+                response = stub.CreateClient(nouveau_client)
+                
+                if response.success:
+                    return redirect('clients_list')
+            except Exception as e:
+                print(f"Erreur gRPC (Création): {e}")
+
+    # Utilise le chemin correct : client_app/create_client.html
+    return render(request, 'client_app/create_client.html')
