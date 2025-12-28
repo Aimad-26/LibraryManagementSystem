@@ -451,3 +451,19 @@ def edit_client(request, client_id):
             print(f"Erreur gRPC Fetch: {e}")
 
     return render(request, 'client_app/edit_client.html', {'client': client_to_edit})
+def delete_client_action(request, client_id):
+    if request.method == 'POST':
+        with grpc.insecure_channel('localhost:50051') as channel:
+            stub = library_pb2_grpc.LibraryServiceStub(channel)
+            try:
+                # On utilise l'ID pour identifier le client à supprimer
+                # Note: Ton .proto doit avoir DeleteClient ou on utilise un message simple
+                request_del = library_pb2.Client(id=int(client_id))
+                response = stub.DeleteClient(request_del)
+                
+                if response.success:
+                    print(f"Client {client_id} supprimé avec succès")
+            except Exception as e:
+                print(f"Erreur gRPC Suppression: {e}")
+                
+    return redirect('clients_list')
