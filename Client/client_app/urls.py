@@ -20,6 +20,5 @@ urlpatterns = [
     path('clients/', views.client_list, name='clients_list'),
     path('clients/add/', views.create_client, name='create_client'),
     path('clients/edit/<int:client_id>/', views.edit_client, name='edit_client'),
-    path('clients/delete/<int:client_id>/', views.delete_client_action, name='delete_client_action'),
-    path('borrow/create/', views.borrow_create, name='borrow_create')
+    path('clients/delete/<int:client_id>/', views.delete_client_action, name='delete_client_action')
 ]

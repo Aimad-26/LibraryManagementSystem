@@ -217,33 +217,3 @@ class LibraryClient:
             return self.stub.DeleteClient(request)
         except grpc.RpcError as e:
             return library_pb2.ClientResponse(success=False, message=e.details())
-    #### commendes ####
-    
-def create_borrow(self, client_id, book_id, borrow_date, return_date):
-    """
-    Appelle le RPC CreateBorrow pour enregistrer un emprunt.
-    """
-    request = library_pb2.BorrowRequest(
-        client_id=str(client_id),
-        book_id=str(book_id),
-        borrow_date=borrow_date,
-        return_date=return_date
-    )
-    try:
-        response = self.stub.CreateBorrow(request)
-        return response
-    except grpc.RpcError as e:
-        print(f"Erreur RPC CreateBorrow: {e.details()}")
-        return library_pb2.BorrowResponse(success=False, message=str(e))
-
-def get_borrow_list(self, client_id):
-    """
-    Appelle le RPC GetBorrowList pour récupérer tous les emprunts d'un client.
-    """
-    request = library_pb2.BorrowListRequest(client_id=str(client_id))
-    try:
-        return list(self.stub.GetBorrowList(request))
-    except grpc.RpcError as e:
-        print(f"Erreur RPC GetBorrowList: {e.details()}")
-        return []
-    

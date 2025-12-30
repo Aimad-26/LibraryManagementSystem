@@ -493,26 +493,3 @@ def delete_client_action(request, client_id):
 
     # 3. On revient TOUJOURS à la liste
     return redirect('clients_list')
-######### Emprunt ######### 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .grpc_client import LibraryClient
-
-client = LibraryClient()
-def borrow_create(request):
-    if request.method == "POST":
-        client_id = request.POST.get("client_id")
-        book_id = request.POST.get("book_id")
-        borrow_date = request.POST.get("borrow_date")
-        return_date = request.POST.get("return_date")
-
-        response = client.CreateBorrow(client_id, book_id, borrow_date, return_date)
-
-        if response.success:
-            messages.success(request, response.message)
-        else:
-            messages.error(request, response.message)
-
-        return redirect('borrow_create')
-
-    return render(request, "borrow_create.html")
