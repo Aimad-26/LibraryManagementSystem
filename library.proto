@@ -1,8 +1,30 @@
 syntax = "proto3";
 
-package library_system;
+package library;
 
-// --- 1. Authentication Messages ---
+service LibraryService {
+
+  // -------- AUTH --------
+  rpc UserLogin (LoginRequest) returns (LoginResponse);
+
+  // -------- BOOK --------
+  rpc CreateBook (Book) returns (StatusResponse);
+  rpc SearchBooks (SearchRequest) returns (stream Book);
+
+  // -------- USERS --------
+  rpc GetAllUsers (SearchRequest) returns (stream UserDetail);
+  rpc GetUserDetail (UserIdRequest) returns (UserDetail);
+  rpc DeleteUser (UserIdRequest) returns (StatusResponse);
+
+  // -------- CLIENTS --------
+  rpc CreateClient (Client) returns (StatusResponse);
+  rpc GetAllClients (SearchRequest) returns (stream Client);
+  rpc GetClient (ClientIdRequest) returns (Client);
+  rpc UpdateClient (Client) returns (StatusResponse);
+  rpc DeleteClient (ClientIdRequest) returns (StatusResponse);
+}
+
+// -------- MESSAGES --------
 
 message LoginRequest {
   string username = 1;
@@ -15,24 +37,17 @@ message LoginResponse {
   string message = 3;
 }
 
-// --- 2. Inventory Messages ---
-
-message Book {
-  int32 id = 1;
-  string title = 2;
-  string author = 3;
-  string isbn = 4;
-
-  int32 total_copies = 5;
-  int32 available_copies = 6;
-
-  string image_url = 7;
-}
-
 message SearchRequest {
   string query = 1;
 }
 
+message UserIdRequest {
+  string user_id = 1;
+}
+
+message ClientIdRequest {
+  int32 client_id = 1;
+}
 
 message StatusResponse {
   bool success = 1;
@@ -40,67 +55,55 @@ message StatusResponse {
   int32 entity_id = 3;
 }
 
-message BorrowRequest {
-  string member_id = 1;
-  int32 book_id = 2;
-}
-
-
-message UpdateProfileRequest {
-  string staff_id = 1;
-  string new_username = 2;
-  string new_email = 3;
-  string current_password = 4;
-  string new_password = 5;
-}
 message UserDetail {
-    string user_id = 1;
-    string username = 2;
-    string email = 3;
-    bool is_staff = 4;
-    bool is_active = 5; // Utilisé pour l'état d'activation/désactivation
-    string date_joined = 6;
-    bool is_superuser = 7; // Utile pour restreindre les actions sur les superusers
+  string user_id = 1;
+  string username = 2;
+  string email = 3;
+  bool is_staff = 4;
+  bool is_active = 5;
+  bool is_superuser = 6;
+  string date_joined = 7;
 }
 
-message UserIdRequest {
-    string user_id = 1;
+message Book {
+  int32 id = 1;
+  string title = 2;
+  string author = 3;
+  string isbn = 4;
+  int32 total_copies = 5;
+  int32 available_copies = 6;
+  string image_url = 7;
 }
-service LibraryService {
-  rpc UserLogin (LoginRequest) returns (LoginResponse);
 
-  rpc CreateBook (Book) returns (StatusResponse);
-  rpc SearchBooks (SearchRequest) returns (stream Book);
-  rpc GetBook (SearchRequest) returns (Book);
-  rpc UpdateBookAvailability (Book) returns (StatusResponse);
-
-  rpc BorrowBook (BorrowRequest) returns (StatusResponse);
-  rpc ReturnBook (BorrowRequest) returns (StatusResponse);
-  rpc GetAllUsers (SearchRequest) returns (stream UserDetail); 
-  rpc GetUserDetail (UserIdRequest) returns (UserDetail); 
-  rpc DeleteUser (UserIdRequest) returns (StatusResponse);
-  rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse);
-  rpc CreateClient (Client) returns (StatusResponse);
-  rpc GetAllClients (SearchRequest) returns (stream Client);
-  // Supprimer un client par son ID
-  rpc DeleteClient(ClientIdRequest) returns (ClientResponse);
-
-  // Mettre à jour les informations d'un client
-  rpc UpdateClient(Client) returns (ClientResponse);
-}
 message Client {
-    int32 id = 1;
-    string nom = 2;
-    string email = 3;
-    string telephone = 4;
-    string adresse = 5;
-    string date_inscription = 6;
+  int32 id = 1;
+  string nom = 2;
+  string email = 3;
+  string telephone = 4;
+  string adresse = 5;
+  string date_inscription = 6;
 }
 
-message ClientIdRequest {
-    int32 client_id = 1;
+// Pour gérer les emprunts
+message BorrowRequest {
+    string client_id = 1;
+    string book_id = 2;
+    string borrow_date = 3;
+    string return_date = 4;
 }
-message ClientResponse {
+
+message BorrowResponse {
     bool success = 1;
     string message = 2;
+}
+
+message BorrowListRequest {
+    string client_id = 1;
+}
+
+message BorrowListResponse {
+    string id = 1;
+    string book_title = 2;
+    string borrow_date = 3;
+    string return_date = 4;
 }
