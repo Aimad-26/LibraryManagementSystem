@@ -1,8 +1,39 @@
 syntax = "proto3";
 
-package library_system;
+package library;
 
-// --- 1. Authentication Messages ---
+service LibraryService {
+
+  // -------- AUTH --------
+  rpc UserLogin (LoginRequest) returns (LoginResponse);
+
+  // -------- BOOK --------
+  rpc CreateBook (Book) returns (StatusResponse);
+  rpc SearchBooks (SearchRequest) returns (stream Book);
+
+  // -------- USERS --------
+  rpc GetAllUsers (SearchRequest) returns (stream UserDetail);
+  rpc GetUserDetail (UserIdRequest) returns (UserDetail);
+  rpc DeleteUser (UserIdRequest) returns (StatusResponse);
+
+  // -------- CLIENTS --------
+  rpc CreateClient (Client) returns (StatusResponse);
+  rpc GetAllClients (SearchRequest) returns (stream Client);
+  rpc GetClient (ClientIdRequest) returns (Client);
+  rpc UpdateClient (Client) returns (StatusResponse);
+  rpc DeleteClient (ClientIdRequest) returns (StatusResponse);
+
+   // -------- LOANS (EMPRUNTS) -------- (👈 AJOUTEZ CES LIGNES)
+   rpc CreateLoan (CreateLoanRequest) returns (LoanResponse);
+   rpc GetLoan (GetLoanRequest) returns (LoanResponse);
+   rpc ListLoans (ListLoansRequest) returns (stream LoanResponse);
+   rpc UpdateLoan (UpdateLoanRequest) returns (LoanResponse);
+   rpc ReturnBook (ReturnBookRequest) returns (LoanResponse);
+   rpc GetLoanStats (EmptyRequest) returns (LoanStatsResponse);
+   rpc GetAvailableBooks (EmptyRequest) returns (stream Book);
+}
+
+// -------- MESSAGES --------
 
 message LoginRequest {
   string username = 1;
@@ -15,24 +46,17 @@ message LoginResponse {
   string message = 3;
 }
 
-// --- 2. Inventory Messages ---
-
-message Book {
-  int32 id = 1;
-  string title = 2;
-  string author = 3;
-  string isbn = 4;
-
-  int32 total_copies = 5;
-  int32 available_copies = 6;
-
-  string image_url = 7;
-}
-
 message SearchRequest {
   string query = 1;
 }
 
+message UserIdRequest {
+  string user_id = 1;
+}
+
+message ClientIdRequest {
+  int32 client_id = 1;
+}
 
 message StatusResponse {
   bool success = 1;
@@ -40,44 +64,111 @@ message StatusResponse {
   int32 entity_id = 3;
 }
 
-message BorrowRequest {
-  string member_id = 1;
-  int32 book_id = 2;
-}
-
-
-message UpdateProfileRequest {
-  string staff_id = 1;
-  string new_username = 2;
-  string new_email = 3;
-  string current_password = 4;
-  string new_password = 5;
-}
 message UserDetail {
-    string user_id = 1;
-    string username = 2;
-    string email = 3;
-    bool is_staff = 4;
-    bool is_active = 5; // Utilisé pour l'état d'activation/désactivation
-    string date_joined = 6;
-    bool is_superuser = 7; // Utile pour restreindre les actions sur les superusers
+  string user_id = 1;
+  string username = 2;
+  string email = 3;
+  bool is_staff = 4;
+  bool is_active = 5;
+  bool is_superuser = 6;
+  string date_joined = 7;
 }
 
-message UserIdRequest {
-    string user_id = 1;
+message Book {
+  int32 id = 1;
+  string title = 2;
+  string author = 3;
+  string isbn = 4;
+  int32 total_copies = 5;
+  int32 available_copies = 6;
+  string image_url = 7;
 }
-service LibraryService {
-  rpc UserLogin (LoginRequest) returns (LoginResponse);
 
-  rpc CreateBook (Book) returns (StatusResponse);
-  rpc SearchBooks (SearchRequest) returns (stream Book);
-  rpc GetBook (SearchRequest) returns (Book);
-  rpc UpdateBookAvailability (Book) returns (StatusResponse);
+message Client {
+  int32 id = 1;
+  string nom = 2;
+  string email = 3;
+  string telephone = 4;
+  string adresse = 5;
+  string date_inscription = 6;
+}
 
-  rpc BorrowBook (BorrowRequest) returns (StatusResponse);
-  rpc ReturnBook (BorrowRequest) returns (StatusResponse);
-  rpc GetAllUsers (SearchRequest) returns (stream UserDetail); 
-  rpc GetUserDetail (UserIdRequest) returns (UserDetail); 
-  rpc DeleteUser (UserIdRequest) returns (StatusResponse);
-  rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse);
+// Pour gérer les emprunts
+message BorrowRequest {
+    string client_id = 1;
+    string book_id = 2;
+    string borrow_date = 3;
+    string return_date = 4;
+}
+
+message BorrowResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message BorrowListRequest {
+    string client_id = 1;
+}
+
+message BorrowListResponse {
+    string id = 1;
+    string book_title = 2;
+    string borrow_date = 3;
+    string return_date = 4;
+}
+
+
+
+
+
+// Requêtes pour les emprunts
+message CreateLoanRequest {
+   int32 client_id = 1;
+   int32 book_id = 2;
+   string due_date = 3;  // Format: YYYY-MM-DD
+}
+
+message GetLoanRequest {
+   int32 loan_id = 1;
+}
+
+message UpdateLoanRequest {
+   int32 loan_id = 1;
+   string due_date = 2;
+   string status = 3;
+}
+
+message ReturnBookRequest {
+   int32 loan_id = 1;
+}
+
+message ListLoansRequest {
+   string status = 1;      // ALL, ACTIVE, OVERDUE, RETURNED
+   string search = 2;      // Recherche par nom, email, titre
+}
+
+message EmptyRequest {}
+
+// Réponses pour les emprunts
+message LoanResponse {
+   int32 id = 1;
+   int32 client_id = 2;
+   string client_name = 3;
+   string client_email = 4;
+   int32 book_id = 5;
+   string book_title = 6;
+   string book_author = 7;
+   string loan_date = 8;
+   string due_date = 9;
+   string return_date = 10;
+   string status = 11;
+   int32 days_remaining = 12;
+   bool is_overdue = 13;
+}
+
+message LoanStatsResponse {
+   int32 active_loans = 1;
+   int32 overdue_loans = 2;
+   int32 returns_today = 3;
+   int32 total_clients = 4;
 }

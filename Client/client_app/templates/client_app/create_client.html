@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Client</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .form-container {
+            max-width: 500px;
+            margin: 60px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 { text-align: center; color: #112d4e; margin-bottom: 30px; font-size: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px; text-uppercase; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dbe2ef;
+            border-radius: 6px;
+            background-color: #f9f7f7;
+            transition: border 0.3s;
+        }
+        .form-group input:focus { border-color: #3f72af; outline: none; background-color: #fff; }
+        .btn-save { 
+            background-color: #3f72af; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 16px; 
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(63, 114, 175, 0.2);
+            transition: background 0.3s;
+        }
+        .btn-save:hover { background-color: #112d4e; }
+        .btn-cancel { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
+        .btn-cancel:hover { text-decoration: underline; }
+        /* Style pour les messages d'erreur Django */
+        .alert { padding: 10px; margin-bottom: 20px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>👤 Nouveau Client</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Nom Complet</label>
+                <input type="text" name="nom" placeholder="ex: Ahmed Alami" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="ahmed@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Téléphone</label>
+                <input type="text" name="telephone" placeholder="0611111111" required>
+            </div>
+
+            <div class="form-group">
+                <label>Adresse</label>
+                <textarea name="adresse" rows="3" placeholder="Adresse complète..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-save">💾 Enregistrer le Client</button>
+            <a href="{% url 'clients_list' %}" class="btn-cancel">Annuler et retourner à la liste</a>
+        </form>
+    </div>
+</body>
+</html>

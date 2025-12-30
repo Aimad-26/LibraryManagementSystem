@@ -1,10 +1,31 @@
 # In Client/client_app/views.py
-
+import grpc
+import library_pb2
+import library_pb2_grpc
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
 from django.urls import reverse
 from django.core.files.storage import FileSystemStorage 
 from .grpc_client import LibraryClient 
+from django.contrib import messages
+from django.db.models import Q
+###commendes####
+from django.shortcuts import  get_object_or_404
+
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+from client_app.models import Client
+
+from .models import Client, Loan, Book
+
+
+
+
+
+
+
+
+
 # NOTE: LibraryClient est importé ici et non dans les fonctions individuelles
 
 # ----------------------------------------------------
@@ -363,3 +384,366 @@ def staff_profile(request: HttpRequest):
 
     # Re-render the page with success/error messages
     return render(request, 'client_app/staff_profile.html', context)
+# --- UTILITAIRE : CONNEXION GRPC ---
+def get_stub():
+    channel = grpc.insecure_channel('localhost:50051')
+    return library_pb2_grpc.LibraryServiceStub(channel)
+
+# --- 1. LISTE DES CLIENTS (Design Photo 4 & 5) ---
+def client_list(request):
+    query = request.GET.get('q', '')  # récupère la valeur de recherche
+    clients = []
+
+    try:
+        stub = get_stub()  # ton stub gRPC
+        grpc_request = library_pb2.SearchRequest(query="")  # on récupère tous les clients
+        client_stream = stub.GetAllClients(grpc_request)
+        
+        # Construire la liste Python
+        for c in client_stream:
+            clients.append({
+                'id': c.id,
+                'nom': c.nom,
+                'email': c.email,
+                'telephone': c.telephone,
+                'adresse': c.adresse,
+                'date_inscription': c.date_inscription
+            })
+        
+        # 🔹 Filtrage côté Django si query n'est pas vide
+        if query:
+            query_lower = query.lower()
+            clients = [
+                c for c in clients
+                if query_lower in c['nom'].lower() or query_lower in c['email'].lower()
+            ]
+    
+    except Exception as e:
+        messages.error(request, f"Erreur de connexion au serveur gRPC : {e}")
+
+    return render(request, 'clients_list.html', {'clients': clients, 'query': query})
+
+# --- 2. CRÉATION DE CLIENT (Design Photo 2 & 3) ---
+def create_client(request):
+    if request.method == 'POST':
+        try:
+            stub = get_stub()
+
+            nouveau_client = library_pb2.Client(
+                nom=request.POST.get('nom'),
+                email=request.POST.get('email'),
+                telephone=request.POST.get('telephone'),
+                adresse=request.POST.get('adresse')
+            )
+
+            response = stub.CreateClient(nouveau_client)
+
+            if response.success:
+                # Cette ligne ne causera plus d'erreur NameError
+                messages.success(request, "✅ Client enregistré avec succès")
+                # Redirection vers la liste après le succès
+                return redirect('clients_list') 
+            else:
+                messages.error(request, response.message)
+
+        except Exception as e:
+            # Cette ligne ne causera plus d'erreur NameError
+            messages.error(request, f"Erreur gRPC : {e}")
+
+    return render(request, 'clients_form.html', {
+        'title': 'Nouveau Client'
+    }
+)
+def edit_client(request, client_id):
+    if not request.session.get('staff_id'):
+        return redirect('staff_login')
+
+    client_grpc = LibraryClient()
+    
+    # 1. On récupère les détails (Indispensable pour remplir le formulaire)
+    client_details = client_grpc.get_client_details(client_id)
+    
+    # Si gRPC ne renvoie rien, on ne peut pas éditer
+    if not client_details or not client_details.nom:
+        print(f"Erreur : Client {client_id} introuvable via gRPC")
+        return redirect('clients_list')
+
+    context = {
+        'client_id': client_id,
+        'client_details': client_details # On passe l'objet au template
+    }
+
+    if request.method == 'POST':
+        # ... (votre logique de mise à jour gRPC reste la même)
+        response = client_grpc.update_client(
+            client_id=client_id,
+            nom=request.POST.get('nom'),
+            email=request.POST.get('email'),
+            telephone=request.POST.get('telephone'),
+            adresse=request.POST.get('adresse')
+        )
+        if response.success:
+            return redirect('clients_list')
+        else:
+            context['error_message'] = response.message
+
+    # On utilise le fichier que vous venez de renommer
+    return render(request, 'client_app/edit_client.html', context)# --- 4. SUPPRESSION DE CLIENT (Bouton rouge) ---
+def delete_client_action(request, client_id):
+    if request.method == 'POST':
+        try:
+            # 1. Connexion gRPC
+            stub = get_stub() # ou votre méthode de connexion
+            
+            # 2. Appel de la suppression (Vérifiez le nom du champ dans votre .proto)
+            # Souvent c'est client_id ou id
+            request_grpc = library_pb2.ClientIdRequest(client_id=int(client_id))
+            response = stub.DeleteClient(request_grpc)
+            
+            if response.success:
+                messages.success(request, "Client supprimé avec succès !")
+            else:
+                messages.error(request, f"Erreur : {response.message}")
+                
+        except Exception as e:
+            print(f"DEBUG: Erreur lors de la suppression : {e}")
+            messages.error(request, "Erreur de connexion au serveur gRPC")
+
+    # 3. On revient TOUJOURS à la liste
+    return redirect('clients_list')
+
+
+
+####commendes#####
+
+def loan_list(request):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """Vue pour afficher la liste des emprunts"""
+    # Récupérer les filtres
+    status_filter = request.GET.get('status', 'ALL')
+    search_query = request.GET.get('search', '')
+    
+    # Base queryset
+    loans = Loan.objects.select_related('client', 'book').all()
+    
+    # Appliquer les filtres
+    if status_filter != 'ALL':
+        loans = loans.filter(status=status_filter)
+    
+    if search_query:
+        loans = loans.filter(
+            Q(client__first_name__icontains=search_query) |
+            Q(client__last_name__icontains=search_query) |
+            Q(client__email__icontains=search_query) |
+            Q(book__title__icontains=search_query) |
+            Q(book__author__icontains=search_query)
+        )
+    
+    # Statistiques
+    stats = {
+        'active_loans': Loan.objects.count(),
+        #'overdue_loans': Loan.objects.filter(status='OVERDUE').count(),
+        #'returns_today': Loan.objects.filter(
+           # due_date=datetime.now().date(),
+           # status='ACTIVE'
+       # ).count()
+    }
+    
+    context = {
+        'loans': loans,
+        'stats': stats,
+        'status_filter': status_filter,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'loans/loan_list.html', context)
+
+
+
+def loan_create(request):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """Vue pour créer un nouvel emprunt"""
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id')
+        book_id = request.POST.get('book_id')
+        due_date = request.POST.get('due_date')
+        
+        try:
+            client = Client.objects.get(id=client_id)
+            book = Book.objects.get(id=book_id)
+            
+            # Vérifier la disponibilité
+            if book.available_copies <= 0:
+                messages.error(request, f"❌ Le livre '{book.title}' n'est pas disponible")
+                return redirect('loans:loan_create')
+            
+            # Vérifier si le client peut emprunter
+            if not client.can_borrow():
+                messages.error(request, f"❌ {client.full_name} a atteint la limite d'emprunts (5 max)")
+                return redirect('loans:loan_create')
+            
+            # Créer l'emprunt
+            loan = Loan.objects.create(
+                client=client,
+                book=book,
+                due_date=due_date,
+                created_by=request.user
+            )
+            
+            # Mettre à jour les copies disponibles
+            book.available_copies -= 1
+            book.save()
+            
+            messages.success(request, f"✅ Emprunt créé avec succès pour {client.full_name}")
+            return redirect('loans:loan_list')
+            
+        except Client.DoesNotExist:
+            messages.error(request, "❌ Client introuvable")
+        except Book.DoesNotExist:
+            messages.error(request, "❌ Livre introuvable")
+        except Exception as e:
+            messages.error(request, f"❌ Erreur: {str(e)}")
+        
+        return redirect('loan_create')
+    
+    # GET request
+    #clients = Client.objects.filter(is_active=True).order_by('first_name')
+    clients = Client.objects.all().order_by('nom') 
+   # books = Book.objects.filter(available_copies__gt=0).order_by('title')
+    books = Book.objects.all().order_by('title')
+    # Date de retour par défaut (14 jours)
+    default_due_date = (datetime.now() + timedelta(days=14)).date()
+    
+    context = {
+        'clients': clients,
+        'books': books,
+        'default_due_date': default_due_date,
+    }
+    
+    return render(request, 'loans/loan_create.html', context)
+
+
+
+def loan_detail(request, loan_id):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """Vue pour afficher les détails d'un emprunt"""
+    loan = get_object_or_404(Loan.objects.select_related('client', 'book'), id=loan_id)
+    
+    context = {
+        'loan': loan,
+    }
+    
+    return render(request, 'loans/loan_detail.html', context)
+
+
+
+def loan_return(request, loan_id):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """Vue pour retourner un livre"""
+    loan = get_object_or_404(Loan, id=loan_id)
+    
+    if loan.status == 'RETURNED':
+        messages.warning(request, "⚠️ Ce livre a déjà été retourné")
+        return redirect('loans:loan_detail', loan_id=loan_id)
+    
+    if request.method == 'POST':
+        loan.return_date = datetime.now()
+        loan.status = 'RETURNED'
+        loan.save()
+        
+        # Mettre à jour les copies disponibles
+        loan.book.available_copies += 1
+        loan.book.save()
+        
+        messages.success(request, f"✅ Livre '{loan.book.title}' retourné avec succès")
+        return redirect('loans:loan_list')
+    
+    return render(request, 'loans/loan_return_confirm.html', {'loan': loan})
+
+
+# ============================================================================
+# API ENDPOINTS (AJAX)
+# ============================================================================
+
+
+def loan_stats_api(request):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """API pour récupérer les statistiques en temps réel"""
+    stats = {
+        'active_loans': Loan.objects.filter(status='ACTIVE').count(),
+        'overdue_loans': Loan.objects.filter(status='OVERDUE').count(),
+        'returns_today': Loan.objects.filter(
+            due_date=datetime.now().date(),
+            status='ACTIVE'
+        ).count(),
+        'total_clients': Client.objects.filter(is_active=True).count()
+    }
+    
+    return JsonResponse(stats)
+
+
+
+def search_clients_api(request):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """API pour rechercher des clients (autocomplete)"""
+    query = request.GET.get('q', '')
+    
+    clients = Client.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query) |
+        Q(email__icontains=query),
+        is_active=True
+    )[:10]  # Limiter à 10 résultats
+    
+    data = [
+        {
+            'id': c.id,
+            'name': c.full_name,
+            'email': c.email,
+            'active_loans': c.active_loans_count
+        }
+        for c in clients
+    ]
+    
+    return JsonResponse({'clients': data})
+
+
+
+def available_books_api(request):
+    if not request.session.get('staff_id'):
+        request.session['login_message'] = "Veuillez vous connecter."
+        return redirect('staff_login')
+    """API pour récupérer les livres disponibles (autocomplete)"""
+    query = request.GET.get('q', '')
+    
+    books = Book.objects.filter(
+        Q(title__icontains=query) |
+        Q(author__icontains=query) |
+        Q(isbn__icontains=query),
+        available_copies__gt=0
+    )[:10]  # Limiter à 10 résultats
+    
+    data = [
+        {
+            'id': b.id,
+            'title': b.title,
+            'author': b.author,
+            'isbn': b.isbn,
+            'available': b.available_copies
+        }
+        for b in books
+    ]
+    
+    return JsonResponse({'books': data})

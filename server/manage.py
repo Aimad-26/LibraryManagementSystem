@@ -3,7 +3,7 @@
 import os
 import sys
 
-
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'client_app'))
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'library_server.settings')
