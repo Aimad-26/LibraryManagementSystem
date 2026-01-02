@@ -372,7 +372,34 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
 
         except Exception as e:
             return library_pb2.StatusResponse(success=False, message=f"Erreur: {str(e)}")
+    
+    def ReturnBook(self, request, context):
+        """Gère le retour d'un livre : clôture le Loan et rend le livre disponible."""
+        try:
+            from library_admin.models import Loan
+            from django.utils import timezone
 
+            with transaction.atomic():
+                loan = Loan.objects.filter(
+                    book_id=request.book_id, 
+                    member_id=int(request.member_id),
+                    returned_date__isnull=True
+                ).first()
+
+                if not loan:
+                    return library_pb2.StatusResponse(success=False, message="Aucun prêt actif trouvé.")
+
+                loan.returned_date = timezone.now().date()
+                loan.save()
+
+                book = loan.book
+                book.available_copies += 1
+                book.save()
+
+                return library_pb2.StatusResponse(success=True, message="Livre retourné avec succès.")
+
+        except Exception as e:
+            return library_pb2.StatusResponse(success=False, message=str(e))
 
 # ----------------------------------------------------
 # 4. Server Initialization (Serve function remains the same)
