@@ -207,6 +207,16 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
 
         return response
         
+    def CreateMember(self, request, context):
+        try:
+            member = Member.objects.create(
+                full_name=request.full_name,
+                email=request.email,
+                phone=request.phone
+            )
+            return library_pb2.StatusResponse(success=True, message="Membre créé.", entity_id=member.id)
+        except Exception as e:
+            return library_pb2.StatusResponse(success=False, message=str(e))
     # ----------------------------------------------------
     # E. User Management: List
     # ----------------------------------------------------
