@@ -142,7 +142,11 @@ def add_book(request: HttpRequest):
 # ----------------------------------------------------
 # C. Staff Profile & User Management Views 
 # ----------------------------------------------------
-
+def members_list(request):
+    """Affiche la liste des clients et gère la suppression."""
+    client = LibraryClient()
+    members = client.get_all_members() # Appel gRPC
+    return render(request, 'client_app/members_list.html', {'members': members})
 # 🚀 1. CREATE USER VIEW
 def create_user(request: HttpRequest):
     """
