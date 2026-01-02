@@ -71,15 +71,29 @@ def dashboard(request: HttpRequest):
 
     query = request.GET.get('q', '')
     client = LibraryClient()
-    book_results = client.search_books(query)
+    
+    # On convertit le stream gRPC en liste pour faire les calculs
+    book_results = list(client.search_books(query))
+
+    # --- NOUVELLE LOGIQUE DE STATISTIQUES ---
+    total_available = 0
+    total_borrowed = 0
+    
+    for book in book_results:
+        total_available += book.available_copies
+        # Le nombre d'empruntés est la différence entre le stock total et le stock disponible
+        total_borrowed += (book.total_copies - book.available_copies)
+    # ----------------------------------------
 
     context = {
         'username': request.session.get('username'),
         'query': query,
         'book_results': book_results,
+        'total_available': total_available, # 👈 ajouté
+        'total_borrowed': total_borrowed,   # 👈 ajouté
         'title': "Librarian Dashboard & Search",
-        'bg_image': bg_image,          # 👈 added
-        'logo_image': logo_image,      # 👈 added
+        'bg_image': bg_image,
+        'logo_image': logo_image,
     }
     return render(request, 'client_app/dashboard.html', context)
 

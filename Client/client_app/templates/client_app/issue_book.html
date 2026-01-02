@@ -4,17 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Issue Book | Librarian Dashboard</title>
+    <title>Librarian Dashboard | Transaction</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <style>
-        .bg-gradient-primary { background: linear-gradient(45deg, #0d6efd, #004fb1); }
-        .card { border-radius: 15px; overflow: hidden; }
+        /* Ajustements pour fusionner Dashboard.css et Bootstrap */
+        .transaction-card { 
+            border-radius: 12px; 
+            border: none; 
+            background: #ffffff;
+        }
         .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+        .form-label { font-size: 0.85rem; letter-spacing: 0.05rem; margin-bottom: 0.5rem; }
+        .form-select-lg, .form-control-lg { font-size: 1rem; border-radius: 8px; }
+        
+        /* Harmonisation des boutons avec votre charte */
+        .btn-confirm { padding: 12px; border-radius: 8px; transition: all 0.3s; }
+        .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        /* Masquer les bordures bleues de focus Bootstrap pour garder votre style */
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-color, #0d6efd);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+        }
     </style>
 </head>
 <body class="dashboard-page">
+
+<div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-overlay" id="profileOverlay"></div>
+    <aside class="profile-panel-body">
+        <div class="profile-panel-header">
+            <button type="button" class="profile-panel-close" id="profileClose">×</button>
+            <div class="profile-panel-user">
+                <div class="profile-panel-avatar">👤</div>
+                <div>
+                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
+                    <p class="profile-panel-handle">@{{ username|default:"librarian" }}</p>
+                </div>
+            </div>
+            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">Edit Profile</a>
+        </div>
+        <nav class="profile-panel-menu">
+            <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
+                <span>Profile</span><span class="profile-panel-arrow">›</span>
+            </button>
+            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
+                <span>Log out</span><span class="profile-panel-arrow">›</span>
+            </button>
+        </nav>
+    </aside>
+</div>
 
 <div class="dashboard-layout">
     <aside class="dashboard-sidebar">
@@ -26,6 +68,7 @@
             <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
             <a href="{% url 'add_book' %}" class="sidebar-link">Add New Book</a>
             <a href="{% url 'issue_book' %}" class="sidebar-link active">🚀 Issue a Book</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users</a>
             <a href="{% url 'members_list' %}" class="sidebar-link">📖 Members</a>
             <p class="sidebar-section-label">ACCOUNT</p>
             <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
@@ -34,99 +77,95 @@
 
     <main class="dashboard-main">
         <div class="dashboard-main-inner">
-
             <header class="topbar">
                 <div class="topbar-search">
-                    <h2 class="section-title" style="margin: 0; font-size: 1.2rem; color: #555;">Loan Management</h2>
+                    <span class="text-muted fw-light">System / Transactions / <strong>Process</strong></span>
                 </div>
                 <div class="topbar-user">
                     <span class="topbar-username">{{ username|default:"Librarian" }}</span>
-                    <div class="topbar-avatar-btn">👤</div>
+                    <button type="button" class="topbar-avatar-btn" id="profileToggle">👤</button>
                 </div>
             </header>
 
-            <section class="container py-5">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 col-lg-8">
-                        
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm mb-4" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+            <section class="hero-banner">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">Circulation Desk</p>
+                    <h1 class="hero-title">
+                        {% if is_return_mode %}📤 Return Processing{% else %}📥 Book Issue{% endif %}
+                    </h1>
+                    <p class="hero-subtitle">Update inventory status and member records instantly.</p>
+                </div>
+            </section>
 
-                        <div class="card border-0 shadow-lg">
-                            <div class="card-header bg-gradient-primary py-3">
-                                <h3 class="card-title mb-0 text-white text-center">
-                                    📖 Enregistrer un Emprunt
-                                </h3>
-                            </div>
-                            
-                            <div class="card-body p-4 p-md-5 bg-white">
-                                <form method="POST" class="needs-validation">
-                                    {% csrf_token %}
-
-                                    <div class="mb-4">
-                                        <label class="form-label fw-bold text-secondary">Sélectionner le Membre</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-light">👤</span>
-                                            <select name="member_id" class="form-select form-select-lg" required>
-                                                <option value="" selected disabled>Chercher un membre...</option>
-                                                {% for member in members %}
-                                                <option value="{{ member.id }}">
-                                                    {{ member.full_name }} (ID: {{ member.id }})
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="form-label fw-bold text-secondary">Sélectionner le Livre</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-light">📚</span>
-                                            <select name="book_id" class="form-select form-select-lg" required>
-                                                <option value="" disabled {% if not preselected_book_id %}selected{% endif %}>Choisir un livre...</option>
-                                                {% for book in books %}
-                                                    <option value="{{ book.id }}" 
-                                                        {% if preselected_book_id == book.id|stringformat:"i" %}selected{% endif %}
-                                                        {% if book.available_copies <= 0 %}disabled{% endif %}>
-                                                        {{ book.title }} 
-                                                        {% if book.available_copies > 0 %}
-                                                            (Stock: {{ book.available_copies }})
-                                                        {% else %}
-                                                            (❌ Épuisé)
-                                                        {% endif %}
-                                                    </option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        {% if preselected_book_id %}
-                                            <div class="form-text text-primary fw-medium mt-2">
-                                                ✨ Ce livre a été sélectionné automatiquement.
-                                            </div>
-                                        {% endif %}
-                                    </div>
-
-                                    <hr class="my-4">
-
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold">
-                                            Valider l'emprunt
-                                        </button>
-                                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill mt-2">
-                                            Annuler et retourner au Dashboard
-                                        </a>
-                                    </div>
-                                </form>
-                            </div>
+            {% if messages %}
+                <div class="px-4 mt-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        
-                        <div class="text-center mt-4 text-muted small">
-                            <p>ℹ️ La date de retour est fixée à 14 jours par défaut.</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <section class="dashboard-section py-4">
+                <div class="row justify-content-center">
+                    <div class="col-xxl-6 col-xl-8 col-lg-10">
+                        <div class="card transaction-card shadow-sm p-4 p-md-5">
+                            <form method="POST">
+                                {% csrf_token %}
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-uppercase text-muted">Identify Member</label>
+                                    <select name="member_id" class="form-select form-select-lg border-2" required>
+                                        <option value="" disabled selected>Search by name or ID...</option>
+                                        {% for member in members %}
+                                            <option value="{{ member.id }}">{{ member.full_name }} (Member ID: {{ member.id }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-uppercase text-muted">Select Work</label>
+                                    <select name="book_id" class="form-select form-select-lg border-2" required>
+                                        <option value="" disabled>Search by Title or ISBN...</option>
+                                        {% for book in books %}
+                                            <option value="{{ book.id }}" 
+                                                {% if preselected_book_id == book.id|stringformat:"i" %}selected{% endif %}>
+                                                {{ book.title }} 
+                                                {% if book.available_copies > 0 %}
+                                                    (Available: {{ book.available_copies }})
+                                                {% else %}
+                                                    (⚠️ Awaiting Return)
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% if not is_return_mode %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-uppercase text-muted">Expected Return Date</label>
+                                    <input type="date" name="due_date" class="form-control form-control-lg border-2" value="{{ default_due_date }}">
+                                </div>
+                                {% endif %}
+
+                                <div class="d-grid gap-3 mt-5">
+                                    {% if is_return_mode %}
+                                        <button type="submit" name="action" value="return" class="btn btn-warning btn-confirm text-white fw-bold shadow-sm">
+                                            Confirm Book Return
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" name="action" value="borrow" class="btn btn-success btn-confirm fw-bold shadow-sm">
+                                            Confirm Loan Issue
+                                        </button>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'dashboard' %}" class="btn btn-link text-decoration-none text-muted">
+                                        Cancel and exit
+                                    </a>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -136,5 +175,20 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const panel = document.getElementById('profilePanel');
+        const toggleBtn = document.getElementById('profileToggle');
+        const closeBtn = document.getElementById('profileClose');
+        const overlay = document.getElementById('profileOverlay');
+
+        if (panel && toggleBtn) {
+            toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+            [closeBtn, overlay].forEach(el => {
+                if (el) el.addEventListener('click', () => panel.classList.remove('open'));
+            });
+        }
+    });
+</script>
 </body>
 </html>
