@@ -76,12 +76,13 @@ message UserIdRequest {
     string user_id = 1;
 }
 service LibraryService {
+  service LibraryService {
   rpc UserLogin (LoginRequest) returns (LoginResponse);
   rpc CreateMember (Member) returns (StatusResponse);
   rpc UpdateMember (Member) returns (StatusResponse);
   rpc DeleteMember (UserIdRequest) returns (StatusResponse);
   rpc GetAllMembers (SearchRequest) returns (stream Member);
-  rpc GetMemberDetail (UserIdRequest) returns (Member)
+  rpc GetMemberDetail (UserIdRequest) returns (Member); // <--- AJOUT DU POINT-VIRGULE ICI
   rpc CreateBook (Book) returns (StatusResponse);
   rpc SearchBooks (SearchRequest) returns (stream Book);
   rpc GetBook (SearchRequest) returns (Book);
@@ -93,4 +94,4 @@ service LibraryService {
   rpc GetUserDetail (UserIdRequest) returns (UserDetail); 
   rpc DeleteUser (UserIdRequest) returns (StatusResponse);
   rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse);
-}
+}}
