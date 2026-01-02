@@ -119,6 +119,8 @@ class LibraryClient:
                 success=False, 
                 message=f"RPC Failed ({status_code.name}): {details}"
             )
+    def delete_member(self, m_id):
+        return self.stub.DeleteMember(library_pb2.UserIdRequest(user_id=str(m_id)))
     def update_member(self, m_id, name, email, phone):
         req = library_pb2.Member(id=str(m_id), full_name=name, email=email, phone=phone)
         return self.stub.UpdateMember(req)
