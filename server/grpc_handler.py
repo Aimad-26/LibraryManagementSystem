@@ -350,22 +350,21 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
 def serve():
     """Démarrage forcé avec vérification des méthodes."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    
-    # On crée l'instance explicitement
     servicer_instance = LibraryServicer()
     
-    # IMPORTANTE VÉRIFICATION : Ce print va confirmer si la méthode est vue par Python
     if hasattr(servicer_instance, 'GetAllMembers'):
-        print("✅ SUCCESS: La méthode GetAllMembers est bien détectée dans la classe.")
-    else:
-        print("❌ FATAL: La méthode GetAllMembers est INTROUVABLE dans la classe !")
-
+        print("✅ SUCCESS")
+    
     library_pb2_grpc.add_LibraryServiceServicer_to_server(servicer_instance, server)
-    
-    # Changez le port ici pour être CERTAIN de ne pas utiliser un vieux tunnel
-    port = "50052" 
-    server.add_insecure_port(f'[::]:{port}')
+    server.add_insecure_port('[::]:50051') 
     server.start()
-    
-    print(f"🚀 SERVEUR DÉMARRÉ SUR LE PORT {port}")
+    print("🚀 SERVEUR DÉMARRÉ SUR LE PORT 50051")
     server.wait_for_termination()
+
+# TRÈS IMPORTANT : Ajoutez ces deux lignes à la fin pour lancer le script
+if __name__ == '__main__':
+    try:
+        serve()
+    except KeyboardInterrupt:
+        print("\n🛑 Arrêt du serveur gRPC (Interrompu par l'utilisateur)...")
+        sys.exit(0)
