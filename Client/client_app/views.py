@@ -143,10 +143,11 @@ def add_book(request: HttpRequest):
 # C. Staff Profile & User Management Views 
 # ----------------------------------------------------
 def members_list(request):
-    """Affiche la liste des clients et gère la suppression."""
+    """Affiche la liste complète des membres (clients)."""
     client = LibraryClient()
-    members = client.get_all_members() # Appel gRPC
-    return render(request, 'client_app/members_list.html', {'members': members})
+    members = client.get_all_members() 
+    # Assurez-vous que le fichier s'appelle bien members.html dans vos templates
+    return render(request, 'client_app/members.html', {'members': members})
 def delete_member_action(request, member_id):
     """Supprime et reste sur la page members.html."""
     if request.method == 'POST':
