@@ -97,6 +97,11 @@ def dashboard(request: HttpRequest):
     }
     return render(request, 'client_app/dashboard.html', context)
 
+def books_list(request):
+    client = LibraryClient()
+    books = list(client.search_books(query=""))
+    return render(request, 'client_app/books_list.html', {'books': books})
+
 def return_book_view(request):
     client = LibraryClient()
     # On récupère l'ID du livre si on vient du bouton "Return" du Dashboard
