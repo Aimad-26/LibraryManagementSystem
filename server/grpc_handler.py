@@ -217,6 +217,16 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
             return library_pb2.StatusResponse(success=True, message="Membre créé.", entity_id=member.id)
         except Exception as e:
             return library_pb2.StatusResponse(success=False, message=str(e))
+    def GetAllMembers(self, request, context):
+        members = Member.objects.all().order_by('-id')
+        for m in members:
+            yield library_pb2.Member(
+                id=str(m.id),
+                full_name=m.full_name,
+                email=m.email,
+                phone=m.phone,
+                date_joined=m.date_joined.isoformat() if m.date_joined else ""
+            )
     # ----------------------------------------------------
     # E. User Management: List
     # ----------------------------------------------------
