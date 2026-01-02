@@ -93,4 +93,4 @@ service LibraryService {
   rpc GetUserDetail (UserIdRequest) returns (UserDetail); 
   rpc DeleteUser (UserIdRequest) returns (StatusResponse);
   rpc UpdateStaffProfile (UpdateProfileRequest) returns (StatusResponse);
-}}
+}
