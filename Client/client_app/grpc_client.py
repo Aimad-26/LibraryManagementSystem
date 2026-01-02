@@ -120,6 +120,8 @@ class LibraryClient:
                 message=f"RPC Failed ({status_code.name}): {details}"
             )
             
+    def get_all_members(self):
+        return list(self.stub.GetAllMembers(library_pb2.SearchRequest(query="")))
     # D2. Creation Wrapper (Uses update_staff_profile for detournement)
     def create_user(self, username, email, password):
         """Crée un nouvel utilisateur staff en détournant le RPC UpdateStaffProfile."""
