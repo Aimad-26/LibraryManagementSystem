@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails Emprunt #{{ loan.id }}</title>
+</head>
+<body>
+    <h1>Emprunt #{{ loan.id }}</h1>
+     <div style="display: flex; gap: 10px;">
+                <a href="{% url 'dashboard' %}" class="nav-button" style="text-decoration: none; padding: 10px 15px; background: #dbe2ef; color: #3f72af; border-radius: 5px; font-weight: bold;">🏠 Dashboard</a>
+            </div>
+    <p><strong>Client:</strong> {{ loan.client.full_name }}</p>
+    <p><strong>Livre:</strong> {{ loan.book.title }}</p>
+    <p><strong>Date d'emprunt:</strong> {{ loan.loan_date|date:"d/m/Y" }}</p>
+    <p><strong>Date de retour:</strong> {{ loan.due_date|date:"d/m/Y" }}</p>
+    <p><strong>Statut:</strong> {{ loan.get_status_display }}</p>
+    <a href="{% url 'loans:loan_list' %}">← Retour</a>
+</body>
+</html>

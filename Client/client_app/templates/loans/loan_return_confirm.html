@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmer le retour</title>
+</head>
+<body>
+    <h1>Confirmer le retour</h1>
+     <div style="display: flex; gap: 10px;">
+                <a href="{% url 'dashboard' %}" class="nav-button" style="text-decoration: none; padding: 10px 15px; background: #dbe2ef; color: #3f72af; border-radius: 5px; font-weight: bold;">🏠 Dashboard</a>
+            </div>
+    <p>Voulez-vous vraiment marquer ce livre comme retourné ?</p>
+    <p><strong>Livre:</strong> {{ loan.book.title }}</p>
+    <p><strong>Client:</strong> {{ loan.client.full_name }}</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">✅ Oui, retourner le livre</button>
+        <a href="{% url 'loans:loan_list' %}">Annuler</a>
+    </form>
+</body>
+</html>

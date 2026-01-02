@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+    <div class="login-container dashboard-container" style="max-width: 600px; margin: 30px auto;">
+        <h1 style="color: #112d4e;">{{ title }}</h1>
+
+        <form method="POST" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            {% csrf_token %}
+            <label>Nom :</label>
+            <input type="text" name="nom" required placeholder="Entrez le nom complet">
+
+            <label>Email :</label>
+            <input type="email" name="email" required placeholder="Entrez l'email">
+
+            <label>Téléphone :</label>
+            <input type="text" name="telephone" required placeholder="Entrez le numéro de téléphone">
+
+            <label>Adresse :</label>
+            <input type="text" name="adresse" required placeholder="Entrez l'adresse">
+
+            <button type="submit" style="background-color: #3f72af; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
+                ➕ Eregistrer
+            </button>
+        </form>
+
+        <br>
+        <a href="{% url 'clients_list' %}" style="text-decoration: none; color: #3f72af;">🔙 Retour à la liste</a>
+    </div>
+</body>
+</html>

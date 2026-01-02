@@ -7,6 +7,25 @@ from django.http import HttpRequest
 from django.urls import reverse
 from django.core.files.storage import FileSystemStorage 
 from .grpc_client import LibraryClient 
+from django.contrib import messages
+from django.db.models import Q
+###commendes####
+from django.shortcuts import  get_object_or_404
+
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+from client_app.models import Client
+
+from .models import Client, Loan, Book
+
+
+
+
+
+
+
+
+
 # NOTE: LibraryClient est importé ici et non dans les fonctions individuelles
 
 # ----------------------------------------------------
