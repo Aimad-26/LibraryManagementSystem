@@ -3,48 +3,189 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Manage Books | Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Management | Librarian Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .book-cover-mini { width: 45px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+        .progress { background-color: #e9ecef; border-radius: 10px; }
+        .progress-bar { border-radius: 10px; }
+        a { text-decoration: none; }
+        .table-hover tbody tr:hover { background-color: #f8f9fa; transition: 0.2s; }
+    </style>
 </head>
 <body class="dashboard-page">
-    <div class="dashboard-layout">
-        <main class="dashboard-main p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>📚 Gestion de l'Inventaire</h2>
-                <a href="{% url 'add_book' %}" class="btn btn-primary">+ Ajouter un Livre</a>
-            </div>
 
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4">Livre</th>
-                            <th>ISBN</th>
-                            <th>Stock</th>
-                            <th class="text-end pe-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for book in books %}
-                        <tr>
-                            <td class="ps-4">
-                                <strong>{{ book.title }}</strong><br>
-                                <small class="text-muted">{{ book.author }}</small>
-                            </td>
-                            <td><code>{{ book.isbn }}</code></td>
-                            <td>{{ book.available_copies }} / {{ book.total_copies }}</td>
-                            <td class="text-end pe-4">
-                                <a href="{% url 'edit_book' book.id %}" class="btn btn-sm btn-outline-primary">Éditer</a>
-                                <a href="{% url 'delete_book' book.id %}" class="btn btn-sm btn-outline-danger" 
-                                   onclick="return confirm('Supprimer ce livre ?')">Supprimer</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-overlay" id="profileOverlay"></div>
+    <aside class="profile-panel-body">
+        <div class="profile-panel-header">
+            <button type="button" class="profile-panel-close" id="profileClose">×</button>
+            <div class="profile-panel-user">
+                <div class="profile-panel-avatar">👤</div>
+                <div>
+                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
+                    <p class="profile-panel-handle">@{{ username|default:"librarian" }}</p>
+                </div>
             </div>
-        </main>
-    </div>
+            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">Edit Profile</a>
+        </div>
+        <nav class="profile-panel-menu">
+            <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
+                <span>Profile</span><span class="profile-panel-arrow">›</span>
+            </button>
+            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
+                <span>Log out</span><span class="profile-panel-arrow">›</span>
+            </button>
+        </nav>
+    </aside>
+</div>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
+        </div>
+        <nav class="sidebar-nav">
+            <p class="sidebar-section-label">LIBRARY</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+            <a href="{% url 'add_book' %}" class="sidebar-link">Add New Book</a>
+            <a href="{% url 'books_list' %}" class="sidebar-link active">📚 Manage Books</a>
+            <a href="{% url 'issue_book' %}" class="sidebar-link">🚀 Issue a Book</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link">📖 Members</a>
+            <p class="sidebar-section-label">ACCOUNT</p>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+            <header class="topbar">
+                <div class="topbar-search">
+                    <span class="text-muted fw-light">Inventory / <strong>Catalogue</strong></span>
+                </div>
+                <div class="topbar-user">
+                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
+                    <button type="button" class="topbar-avatar-btn" id="profileToggle">👤</button>
+                </div>
+            </header>
+
+            <section class="hero-banner">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">Catalog Management</p>
+                    <h1 class="hero-title">📚 Gestion de l'Inventaire</h1>
+                    <p class="hero-subtitle">Contrôlez votre collection : éditez les détails ou supprimez les références obsolètes.</p>
+                </div>
+                <div class="hero-actions">
+                     <a href="{% url 'add_book' %}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                        + Ajouter un Livre
+                    </a>
+                </div>
+            </section>
+
+            {% if messages %}
+                <div class="px-4 mt-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                            {% if message.tags == 'success' %}✅{% else %}⚠️{% endif %} {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <section class="dashboard-section p-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4" style="width: 40%;">Livre</th>
+                                    <th style="width: 20%;">ISBN</th>
+                                    <th style="width: 20%;">Stock & Disponibilité</th>
+                                    <th class="text-end pe-4" style="width: 20%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in books %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center text-decoration-none">
+                                            {% if book.image_url %}
+                                                <img src="{{ MEDIA_URL }}{{ book.image_url }}" class="book-cover-mini me-3">
+                                            {% else %}
+                                                <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width:45px; height:60px; font-size: 1.2rem;">📖</div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ book.title }}</div>
+                                                <small class="text-muted">{{ book.author }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><code>{{ book.isbn }}</code></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1 me-2">
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar {% if book.available_copies > 0 %}bg-success{% else %}bg-danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {% widthratio book.available_copies book.total_copies 100 %}%"></div>
+                                                </div>
+                                            </div>
+                                            <small class="fw-bold">{{ book.available_copies }}/{{ book.total_copies }}</small>
+                                        </div>
+                                        {% if book.available_copies == 0 %}
+                                            <small class="text-danger" style="font-size: 0.7rem;">⚠️ Indisponible</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group">
+                                            <a href="{% url 'edit_book' book.id %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill me-2">
+                                                <i class="bi bi-pencil"></i> Éditer
+                                            </a>
+                                            <a href="{% url 'delete_book' book.id %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill" 
+                                               onclick="return confirm('❗ Action irréversible : Supprimer définitivement « {{ book.title }} » ?')">
+                                                <i class="bi bi-trash"></i> Supprimer
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <img src="{% static 'images/empty-box.png' %}" alt="" style="width: 80px; opacity: 0.5;">
+                                        <p class="mt-2 text-muted">Aucun livre trouvé dans le catalogue.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const panel = document.getElementById('profilePanel');
+        const toggleBtn = document.getElementById('profileToggle');
+        const closeBtn = document.getElementById('profileClose');
+        const overlay = document.getElementById('profileOverlay');
+
+        if (panel && toggleBtn) {
+            toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+            [closeBtn, overlay].forEach(el => {
+                if (el) el.addEventListener('click', () => panel.classList.remove('open'));
+            });
+        }
+    });
+</script>
 </body>
 </html>

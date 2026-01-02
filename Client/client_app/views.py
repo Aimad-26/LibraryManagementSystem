@@ -1,5 +1,5 @@
 # In Client/client_app/views.py
-
+import library_pb2
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
 from django.urls import reverse
@@ -96,13 +96,63 @@ def dashboard(request: HttpRequest):
         'logo_image': logo_image,
     }
     return render(request, 'client_app/dashboard.html', context)
+def edit_book_view(request, book_id):
+    client = LibraryClient()
+    
+    # --- ACTION : Enregistrement après modification ---
+    if request.method == "POST":
+        # On construit l'objet Book avec les nouvelles valeurs du formulaire
+        updated_book = library_pb2.Book(
+            id=int(book_id),
+            title=request.POST.get('title'),
+            author=request.POST.get('author'),
+            isbn=request.POST.get('isbn'),
+            total_copies=int(request.POST.get('total_copies')),
+            available_copies=int(request.POST.get('available_copies'))
+        )
+        
+        # Appel gRPC au serveur
+        response = client.stub.UpdateBookAvailability(updated_book)
+        
+        if response.success:
+            messages.success(request, f"L'ouvrage '{updated_book.title}' a été mis à jour.")
+            return redirect('books_list')
+        else:
+            messages.error(request, f"Échec de la mise à jour : {response.message}")
+
+    # --- AFFICHAGE : Récupération des données actuelles ---
+    try:
+        # On utilise SearchRequest (champ query) pour demander l'ID au serveur
+        book_to_edit = client.stub.GetBook(library_pb2.SearchRequest(query=str(book_id)))
+    except Exception as e:
+        messages.error(request, "Erreur lors de la récupération du livre.")
+        return redirect('books_list')
+
+    return render(request, 'client_app/edit_book.html', {
+        'book': book_to_edit,
+        'username': request.session.get('username'),
+        'logo_image': "book_covers/ismac_logo.png"
+    })
 def delete_book(request, book_id):
     client = LibraryClient()
-    response = client.stub.DeleteBook(library_pb2.SearchRequest(query=str(book_id)))
-    if response.success:
-        messages.success(request, response.message)
-    else:
-        messages.error(request, response.message)
+    
+    # On utilise SearchRequest pour envoyer l'ID au serveur via le champ 'query'
+    # comme défini dans votre fichier .proto
+    delete_request = library_pb2.SearchRequest(query=str(book_id))
+    
+    try:
+        # Appel de la méthode RPC DeleteBook
+        response = client.stub.DeleteBook(delete_request)
+        
+        if response.success:
+            messages.success(request, f"Succès : {response.message}")
+        else:
+            messages.error(request, f"Erreur : {response.message}")
+            
+    except Exception as e:
+        messages.error(request, f"Erreur de communication avec le serveur gRPC : {e}")
+    
+    # Redirection immédiate vers la liste des livres
     return redirect('books_list')
 def books_list(request):
     client = LibraryClient()

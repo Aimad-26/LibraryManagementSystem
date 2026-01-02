@@ -431,13 +431,22 @@ def UpdateBookAvailability(self, request, context):
 
 # 2. Suppression d'un livre
 def DeleteBook(self, request, context):
-    try:
-        book_id = int(request.query) # On utilise le champ query de SearchRequest
-        book = Book.objects.get(id=book_id)
-        book.delete()
-        return library_pb2.StatusResponse(success=True, message="Livre supprimé.")
-    except Exception as e:
-        return library_pb2.StatusResponse(success=False, message=str(e))
+        try:
+            book_id = int(request.query)
+            # Votre logique Django sur le serveur pour supprimer
+            from .models import Book 
+            book = Book.objects.get(id=book_id)
+            book.delete()
+            
+            return library_pb2.StatusResponse(
+                success=True, 
+                message="Livre supprimé avec succès."
+            )
+        except Exception as e:
+            return library_pb2.StatusResponse(
+                success=False, 
+                message=f"Erreur serveur: {str(e)}"
+            )
 # ----------------------------------------------------
 # 4. Server Initialization (Serve function remains the same)
 # ----------------------------------------------------

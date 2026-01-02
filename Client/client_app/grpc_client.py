@@ -146,6 +146,37 @@ class LibraryClient:
     # ----------------------------------------------------
     # E. User Management (List, Get, Delete) 🚀 NOUVEAU 🚀
     # ----------------------------------------------------
+    # ----------------------------------------------------
+    # F. Book Management (Update & Delete) 🚀 NOUVEAU 🚀
+    # ----------------------------------------------------
+
+    def update_book(self, book_obj):
+        """Appelle le RPC UpdateBookAvailability pour mettre à jour les infos d'un livre."""
+        try:
+            return self.stub.UpdateBookAvailability(book_obj)
+        except grpc.RpcError as e:
+            print(f"Error calling UpdateBookAvailability: {e.details()}")
+            return library_pb2.StatusResponse(success=False, message=e.details())
+
+    def delete_book(self, book_id):
+        """Appelle le RPC DeleteBook pour supprimer un livre via son ID."""
+        request = library_pb2.SearchRequest(query=str(book_id))
+        try:
+            return self.stub.DeleteBook(request)
+        except grpc.RpcError as e:
+            # Si vous avez l'erreur UNIMPLEMENTED ici, c'est que le serveur 
+            # n'a pas encore redémarré avec le nouveau .proto
+            print(f"Error calling DeleteBook RPC: {e.details()}")
+            return library_pb2.StatusResponse(success=False, message=e.details())
+
+    def get_book_detail(self, book_id):
+        """Appelle le RPC GetBook pour récupérer les données d'un livre spécifique."""
+        request = library_pb2.SearchRequest(query=str(book_id))
+        try:
+            return self.stub.GetBook(request)
+        except grpc.RpcError as e:
+            print(f"Error calling GetBook RPC: {e.details()}")
+            return None
     def return_book(self, member_id, book_id):
         """Appelle le serveur pour enregistrer un retour."""
         request = library_pb2.BorrowRequest(
