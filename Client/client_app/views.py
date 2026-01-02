@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage 
 from .grpc_client import LibraryClient 
+from django.utils import timezone
+from datetime import timedelta
 # NOTE: LibraryClient est importé ici et non dans les fonctions individuelles
 
 # ----------------------------------------------------
@@ -167,28 +169,38 @@ def add_book(request: HttpRequest):
 # --- Section Membres dans client_app/views.py ---
 def issue_book_view(request):
     client = LibraryClient()
+    book_id = request.GET.get('book_id')
     
-    # Récupérer le book_id depuis l'URL (si présent)
-    preselected_book_id = request.GET.get('book_id')
-
-    if request.method == "POST":
-        member_id = request.POST.get('member_id')
-        book_id = request.POST.get('book_id')
-        
-        response = client.borrow_book(member_id, book_id)
-        if response.success:
-            messages.success(request, response.message)
-            return redirect('dashboard')
-        else:
-            messages.error(request, response.message)
-
+    # 1. Récupérer les données pour les listes
     members = list(client.get_all_members())
     books = list(client.search_books(query=""))
     
+    # 2. Déterminer le mode (Borrow ou Return) basé sur le stock
+    target_book = next((b for b in books if str(b.id) == str(book_id)), None)
+    is_return_mode = target_book.available_copies == 0 if target_book else False
+    
+    if request.method == "POST":
+        action = request.POST.get('action')
+        m_id = request.POST.get('member_id')
+        b_id = request.POST.get('book_id')
+
+        if action == "borrow":
+            # Optionnel: on peut passer une due_date personnalisée ici
+            response = client.borrow_book(m_id, b_id)
+        elif action == "return":
+            response = client.return_book(m_id, b_id)
+        
+        if response.success:
+            messages.success(request, response.message)
+            return redirect('dashboard')
+        messages.error(request, response.message)
+
     return render(request, 'client_app/issue_book.html', {
         'members': members,
         'books': books,
-        'preselected_book_id': preselected_book_id  # On passe l'ID au template
+        'preselected_book_id': book_id,
+        'is_return_mode': is_return_mode,
+        'default_due_date': (timezone.now() + timedelta(days=14)).strftime('%Y-%m-%d')
     })
 def members_list(request):
     """Affiche la liste complète des membres (clients)."""
