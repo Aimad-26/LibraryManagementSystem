@@ -1,162 +1,288 @@
 {% load static %}
-{% comment %} <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | Gestion Utilisateurs</title>
+    <title>{{ title }} | ISMAC Staff</title>
     
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}"> 
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
     <style>
-        /* Styles nécessaires pour cette page (assurez-vous qu'ils sont inclus dans vos CSS) */
-        .form-section-title { margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #333; }
-        .form-field { margin-bottom: 15px; }
-        .form-field input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .message-container { padding: 15px; margin-bottom: 20px; border-radius: 5px; font-weight: bold; text-align: center; }
-        .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
-</head> {% endcomment %}
-{% comment %} <body>
-    <div class="login-container dashboard-container">
+        :root {
+            --primary-color: #ff4757;
+            --dark-blue: #0f172a;
+            --glass-bg: #ffffff;
+            --dark-overlay: rgba(15, 23, 42, 0.4);
+        }
+
+        /* Stabilité totale : écran fixe sans scroll global */
+        body, html {
+            margin: 0; padding: 0; 
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden; 
+        }
+
+        /* Arrière-plan global */
+        .bg-image {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('{{ MEDIA_URL }}{{ bg_image }}') center/cover no-repeat;
+            z-index: -2;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark-overlay); z-index: -1;
+        }
+
+        .main-auth-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ZONE GAUCHE : DÉCOR FIXE (Identique au Login) */
+        .visual-panel {
+            flex: 1;
+            height: 100vh;
+            background: transparent;
+            position: relative;
+            display: none; /* Masqué sur mobile */
+        }
+
+        /* ZONE DROITE : FORMULAIRE AVEC SÉPARATION DIAGONALE */
+        .form-side {
+            flex: 1;
+            background: var(--glass-bg);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            /* Séparation Diagonale identique au login */
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+            padding: 2rem;
+            z-index: 10;
+            animation: slideInRight 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+       .signup-text {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .signup-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        /* Conteneur interne avec marge pour compenser l'oblique */
+        .form-wrapper {
+            width: 100%;
+            max-width: 420px;
+            margin-left: 12%; 
+            max-height: 95vh;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .form-wrapper::-webkit-scrollbar { width: 0px; }
+
+        /* Bouton Retour (Close) */
+        .btn-close-portal {
+            position: absolute; top: 25px; right: 35px;
+            width: 42px; height: 42px;
+            background: #f1f5f9; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #64748b; text-decoration: none;
+            transition: all 0.3s ease; z-index: 20;
+        }
+        .btn-close-portal:hover {
+            background: #fee2e2; color: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        /* Header & Logo adaptés */
+        .header-section { text-align: center; margin-bottom: 2rem; }
         
-        <div class="header-controls" style="justify-content: space-between;">
-            <div class="header" style="text-align: left;">
-                <h1>👤 Créer un Nouvel Utilisateur Staff</h1>
-                <p>Connecté en tant que : **{{ username_session }}**</p>
-            </div>
-            <a href="{% url 'dashboard' %}" class="nav-button">
-                <i aria-hidden="true">🏠</i> Tableau de Bord
-            </a>
-        </div>
+        .logo-container { 
+            height: 70px; 
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 10px;
+        }
+        .logo-container img { 
+            max-height: 100%; max-width: 180px;
+            object-fit: contain; 
+        }
 
-        <hr>
+        .brand-name { 
+            font-size: 2.5rem; font-weight: 800; color: var(--dark-blue); 
+            margin: 0; letter-spacing: -1px;
+        }
+        .page-subtitle { 
+            font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; 
+            color: #94a3b8; font-weight: 700; 
+        }
 
-        {% if message %}
-            <div class="message-container {% if success %}success-message{% else %}error-message{% endif %}">
-                {{ message }}
-            </div>
-        {% endif %}
+        /* Groupes de saisie modernes (Style identique au login) */
+        .custom-field-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+            border-bottom: 2px solid #f1f5f9;
+            transition: border-color 0.3s ease;
+        }
+        .custom-field-group:focus-within { 
+            border-bottom-color: var(--primary-color); 
+            transform: translateY(-2px);
+        }
 
-        <h2 class="form-section-title">Informations du Compte</h2>
+        .field-label {
+            font-size: 0.75rem; font-weight: 800; color: #475569;
+            text-transform: none; margin-bottom: 2px; display: block;
+        }
 
-        <form method="post" action="{% url 'create_user' %}" class="add-user-form"> 
-            {% csrf_token %}
+        .auth-input {
+            width: 100%; border: none; background: transparent;
+            padding: 8px 0; outline: none; font-size: 1rem;
+            font-weight: 600; color: var(--dark-blue);
+        }
 
-            <div class="form-field">
-                <label for="id_username">Nom d'Utilisateur *</label>
-                <input type="text" id="id_username" name="username" value="{{ username|default:'' }}" required placeholder="Nom d'utilisateur unique">
-            </div>
+        .toggle-password {
+            position: absolute; right: 0; bottom: 8px;
+            background: none; border: none; color: #cbd5e1;
+            cursor: pointer;
+        }
 
-            <div class="form-field">
-                <label for="id_email">Adresse E-mail (Optionnel)</label>
-                <input type="email" id="id_email" name="email" value="{{ email|default:'' }}" placeholder="exemple@bibliotheque.com">
-            </div>
+        /* Bouton d'action principal */
+        .btn-submit {
+            width: 100%; background: var(--primary-color);
+            color: white; border: none; padding: 0.9rem;
+            border-radius: 50px; font-weight: 700;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover { 
+            transform: scale(1.02) translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4); 
+        }
 
-            <div class="form-field">
-                <label for="id_password">Mot de Passe *</label>
-                <input type="password" id="id_password" name="password" required>
-            </div>
+        /* Animations */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
-            <div class="form-field">
-                <label for="id_password_confirm">Confirmer Mot de Passe *</label>
-                <input type="password" id="id_password_confirm" name="password_confirm" required>
-            </div>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-            <button type="submit" class="login-btn action-button-primary" style="width: 100%; margin-top: 25px;">
-                ➕ Créer le Compte Staff
-            </button>
-        </form>
+        .animate-fade {
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+        }
 
-    </div>
-</body>
-</html> {% endcomment %}
+        /* Responsive */
+        @media (min-width: 992px) {
+            .visual-panel { display: block; }
+        }
 
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ title }} | Gestion Utilisateurs</title>
-
-  <!-- Reuse your auth modal CSS -->
-  <link rel="stylesheet" href="{% static 'css/edit_user.css' %}?v=2">
+        @media (max-width: 991px) {
+            .form-side { clip-path: none; flex: 1; }
+            .form-wrapper { margin-left: 0; }
+            body { overflow-y: auto; }
+        }
+    </style>
 </head>
+<body>
 
-<body class="auth-page">
+    <div class="bg-image"></div>
+    <div class="overlay"></div>
 
-  <!-- Background image layer -->
-  <div class="auth-bg" style="--auth-bg: url('{{ MEDIA_URL }}{{ bg_image }}');"></div>
+    <div class="main-auth-container">
+        <div class="visual-panel"></div>
 
-  <!-- Center modal card -->
-  <div class="auth-modal">
+        <div class="form-side shadow-lg">
+            <a href="{% url 'dashboard' %}" class="btn-close-portal" title="Retour au tableau de bord">
+                <i class="ri-close-line"></i>
+            </a>
 
-    <!-- Close button -->
-    <a class="auth-close" href="{% url 'dashboard' %}" aria-label="Close">×</a>
+            <div class="form-wrapper">
+                <header class="header-section">
+                    <div class="logo-container animate-fade" style="animation-delay: 0.2s;">
+                        <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo">
+                    </div>
+                    <h1 class="brand-name animate-fade" style="animation-delay: 0.3s;">REGISTER </h1>
+                    <p class="page-subtitle animate-fade" style="animation-delay: 0.4s;">Create Librarian Account</p>
+                </header>
 
-    <!-- Header -->
-    <div class="auth-header">
-      <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="auth-logo">
-      <h1 class="auth-title">Create an account</h1>
-      <p class="auth-subtitle">Create a new staff user</p>
+                {% if message %}
+                <div class="alert {% if success %}alert-success{% else %}alert-danger{% endif %} border-0 shadow-sm rounded-4 py-2 small mb-4 text-center animate-fade" style="animation-delay: 0.5s;">
+                    <i class="ri-information-line me-2"></i> {{ message }}
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'create_user' %}" class="animate-fade" style="animation-delay: 0.6s;">
+                    {% csrf_token %}
+
+                    <div class="custom-field-group">
+                        <label class="field-label" for="id_username">Login / Username *</label>
+                        <input type="text" id="id_username" name="username" class="auth-input" 
+                               placeholder="your_name" value="{{ username|default:'' }}" required>
+                    </div>
+
+                    <div class="custom-field-group">
+                        <label class="field-label" for="id_email">Email Address (Optionnel)</label>
+                        <input type="email" id="id_email" name="email" class="auth-input" 
+                               placeholder="name@library.com" value="{{ email|default:'' }}">
+                    </div>
+
+                    <div class="custom-field-group">
+                        <label class="field-label" for="id_password">Password *</label>
+                        <input type="password" id="id_password" name="password" class="auth-input" required placeholder="••••••••">
+                        <button type="button" class="toggle-password" onclick="toggleVisibility('id_password', this)">
+                            <i class="ri-eye-line"></i>
+                        </button>
+                    </div>
+
+                    <div class="custom-field-group">
+                        <label class="field-label" for="id_password_confirm">Confirm Password *</label>
+                        <input type="password" id="id_password_confirm" name="password_confirm" class="auth-input" required placeholder="••••••••">
+                        <button type="button" class="toggle-password" onclick="toggleVisibility('id_password_confirm', this)">
+                            <i class="ri-eye-line"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="ri-user-add-line me-2"></i> Sign Up
+                    </button>
+
+                    <div class="text-center mt-4">
+                        <p class="small text-muted">Already have an account? <a href="{% url 'staff_login' %}" class="signup-link">Log in</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    {% if message %}
-      <div class="auth-alert {% if success %}auth-alert-success{% else %}auth-alert-error{% endif %}">
-        {{ message }}
-      </div>
-    {% endif %}
-
-    <form method="post" action="{% url 'create_user' %}" class="auth-form">
-      {% csrf_token %}
-
-      <div class="auth-field">
-        <label for="id_username">Login *</label>
-        <input class="auth-input" type="text" id="id_username" name="username"
-               value="{{ username|default:'' }}" required placeholder="Username">
-      </div>
-
-      <div class="auth-field">
-        <label for="id_email">Email (Optionnel)</label>
-        <input class="auth-input" type="email" id="id_email" name="email"
-               value="{{ email|default:'' }}" placeholder="mail@gmail.com">
-      </div>
-
-      <div class="auth-field auth-field-password">
-        <label for="id_password">Password *</label>
-        <input class="auth-input" type="password" id="id_password" name="password" required>
-        <button type="button" class="auth-eye" aria-label="Show password"
-                onclick="togglePwd('id_password', this)">👁</button>
-      </div>
-
-      <div class="auth-field auth-field-password">
-        <label for="id_password_confirm">Confirm Password *</label>
-        <input class="auth-input" type="password" id="id_password_confirm" name="password_confirm" required>
-        <button type="button" class="auth-eye" aria-label="Show password confirm"
-                onclick="togglePwd('id_password_confirm', this)">👁</button>
-      </div>
-
-      <button type="submit" class="auth-submit">Sign Up</button>
-
-      <p class="auth-footer">
-        Already have an account? <a href="{% url 'staff_login' %}">Log in</a>
-      </p>
-    </form>
-
-  </div>
-
-  <script>
-    function togglePwd(inputId, btn) {
-      const el = document.getElementById(inputId);
-      if (!el) return;
-      const isPwd = el.type === "password";
-      el.type = isPwd ? "text" : "password";
-      btn.textContent = isPwd ? "🙈" : "👁";
-    }
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleVisibility(inputId, btn) {
+            const el = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (el.type === "password") {
+                el.type = "text";
+                icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
+            } else {
+                el.type = "password";
+                icon.classList.replace('ri-eye-off-line', 'ri-eye-line');
+            }
+        }
+    </script>
 </body>
 </html>
