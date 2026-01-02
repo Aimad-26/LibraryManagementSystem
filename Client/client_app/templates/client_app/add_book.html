@@ -13,201 +13,155 @@
     <style>
         :root {
             --primary: #ff4757;
-            --text-white: #ffffff;
-            --text-label: #ff4757; /* Couleur vive pour les labels pour qu'ils ressortent */
-            --input-bg: rgba(0, 0, 0, 0.5); /* Fond plus sombre pour un contraste maximal avec le texte blanc */
+            --dark: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.92);
         }
 
+        /* Arrière-plan strictement fixe */
         body, html {
             margin: 0; padding: 0;
             height: 100vh; width: 100vw;
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: url('{{ bg_image|default:"/static/images/default-bg.jpg" }}') center/cover no-repeat fixed;
-            overflow: hidden;
+            overflow: hidden; /* Désactive tout scroll */
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* Overlay de fond sombre pour détacher le formulaire */
         .page-overlay {
             position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.65);
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.7) 100%);
             z-index: -1;
         }
 
-        .main-content {
-            width: 90%;
-            max-width: 1100px;
-            z-index: 10;
+        /* Carte large et compacte (S'adapte à l'écran) */
+        .wide-card {
+            width: 95%;
+            max-width: 1200px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+            padding: 2.5rem;
+            animation: fadeInScale 0.6s ease-out;
         }
 
-        .minimal-header h1 { 
-            font-weight: 800; font-size: 3.2rem; color: var(--text-white); 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        /* Header compact */
+        .compact-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem; border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 1rem;
         }
-        .minimal-header p { 
-            color: var(--text-white); opacity: 0.9; font-size: 1.1rem; font-weight: 500;
-        }
-
-        /* --- STYLES LISIBILITÉ INPUTS --- */
-        .glass-input-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        /* Label avec ombre portée pour lecture sur fond complexe */
-        .glass-input-group label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            margin-bottom: 8px;
-            color: var(--text-label);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .input-control {
-            width: 100%;
-            background: var(--input-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 14px 20px;
-            color: var(--text-white);
-            font-size: 1.05rem;
-            font-weight: 600;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        /* Placeholder plus clair */
-        .input-control::placeholder { color: rgba(255, 255, 255, 0.5); font-weight: 400; }
-
-        .input-control:focus {
-            background: rgba(0, 0, 0, 0.7);
-            border-color: var(--primary);
-            box-shadow: 0 0 25px rgba(255, 71, 87, 0.3);
-            transform: translateY(-2px);
-        }
-
-        /* Upload Zone Haute Visibilité */
-        .minimal-upload {
-            background: var(--input-bg);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 22px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            cursor: pointer;
+        .title-area h1 { font-weight: 800; font-size: 1.8rem; color: var(--dark); margin: 0; }
+        .btn-back {
+            text-decoration: none; color: var(--dark); font-weight: 700;
+            padding: 8px 16px; background: white; border-radius: 10px;
+            font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: 0.3s;
-            backdrop-filter: blur(10px);
         }
-        .minimal-upload:hover { 
-            border-color: var(--primary); 
-            background: rgba(255, 71, 87, 0.1);
-        }
-        .minimal-upload i { color: var(--primary); font-size: 2rem; }
-        .upload-text-main { color: white; font-weight: 700; display: block; }
+        .btn-back:hover { color: var(--primary); transform: translateX(-3s); }
 
-        /* Bouton Action Principal */
-        .btn-action {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 16px 45px;
-            border-radius: 14px;
-            font-weight: 800;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        /* Grille de saisie optimisée */
+        .input-box {
+            background: white; border: 2px solid transparent; border-radius: 14px;
+            padding: 10px 18px; transition: 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
-        .btn-action:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(255, 71, 87, 0.5);
-            filter: brightness(1.1);
+        .input-box:focus-within {
+            border-color: var(--primary); transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(255, 71, 87, 0.1);
         }
+        .input-box label { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; margin-bottom: 2px; }
+        .input-box input { width: 100%; border: none; outline: none; font-weight: 600; font-size: 0.95rem; color: var(--dark); }
 
-        .status-badge {
-            position: fixed; top: 30px; right: 30px;
-            padding: 12px 25px; border-radius: 50px;
-            background: rgba(0, 184, 148, 0.9);
-            color: white; font-weight: 700; z-index: 1000;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            animation: fadeInRight 0.5s ease-out;
+        /* Dropzone compacte */
+        .compact-upload {
+            border: 2px dashed #cbd5e1; border-radius: 16px; padding: 1.2rem;
+            text-align: center; cursor: pointer; transition: 0.3s;
+            background: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; gap: 15px;
         }
+        .compact-upload:hover { border-color: var(--primary); background: rgba(255, 71, 87, 0.02); }
+        .upload-icon { font-size: 1.8rem; color: var(--primary); }
 
-        @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        /* Bouton Action Large */
+        .btn-submit {
+            background: var(--dark); color: white; border: none; padding: 1rem;
+            border-radius: 14px; font-weight: 800; width: 100%;
+            transition: 0.4s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-submit:hover { background: var(--primary); box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3); }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
 
     <div class="page-overlay"></div>
 
-    {% if message and success %}
-        <div class="status-badge">
-            <i class="ri-checkbox-circle-fill"></i> {{ message }}
-        </div>
-    {% endif %}
-
-    <div class="main-content">
-        <header class="minimal-header mb-5 d-flex justify-content-between align-items-end">
-            <div>
-                <h1>New Inventory</h1>
-                <p>Register a new book into the system</p>
+    <div class="wide-card shadow-lg">
+        <header class="compact-header">
+            <div class="title-area d-flex align-items-center gap-3">
+                <i class="ri-add-box-fill text-primary fs-2"></i>
+                <div>
+                    <h1>New Inventory Book</h1>
+                    <p class="text-muted small m-0">Add a new title to the central library records.</p>
+                </div>
             </div>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-light rounded-3 px-4 py-2 mb-3 fw-bold border-2">
-                <i class="ri-arrow-go-back-line"></i> Dashboard
-            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-light text-dark border p-2 fw-bold">User: {{ username }}</span>
+                <a href="{% url 'dashboard' %}" class="btn-back">
+                    <i class="ri-arrow-left-line"></i> Dashboard
+                </a>
+            </div>
         </header>
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <div class="row g-4">
+            <div class="row g-3">
                 <div class="col-md-8">
-                    <div class="glass-input-group">
-                        <label for="id_title">Official Book Title</label>
-                        <input type="text" id="id_title" name="title" class="input-control" placeholder="e.g. Design Patterns" required>
+                    <div class="input-box">
+                        <label>OFFICIAL TITLE *</label>
+                        <input type="text" name="title" placeholder="Enter book title" required>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="glass-input-group">
-                        <label for="id_isbn">ISBN Code</label>
-                        <input type="text" id="id_isbn" name="isbn" class="input-control" placeholder="978-XXXXXXXX" required>
+                    <div class="input-box">
+                        <label>ISBN-13 CODE *</label>
+                        <input type="text" name="isbn" placeholder="978-XXXXXXXXXX" required>
                     </div>
                 </div>
 
-                <div class="col-md-5">
-                    <div class="glass-input-group">
-                        <label for="id_author">Primary Author</label>
-                        <input type="text" id="id_author" name="author" class="input-control" placeholder="Full Name" required>
+                <div class="col-md-4">
+                    <div class="input-box">
+                        <label>AUTHOR / CONTRIBUTOR *</label>
+                        <input type="text" name="author" placeholder="Jane Doe" required>
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="glass-input-group">
-                        <label for="id_copies">Quantity</label>
-                        <input type="number" id="id_copies" name="copies" class="input-control" value="1" min="1" required>
+                    <div class="input-box">
+                        <label>QUANTITY *</label>
+                        <input type="number" name="copies" min="1" value="1" required>
                     </div>
                 </div>
-                <div class="col-md-5">
-                    <label class="glass-input-group label" style="font-size: 0.8rem; font-weight: 800; color: var(--text-label);">Cover Asset</label>
-                    <div class="minimal-upload" onclick="document.getElementById('id_image').click()">
-                        <i class="ri-folder-add-fill"></i>
-                        <div>
-                            <span id="file-name" class="upload-text-main">Choose cover file</span>
-                            <span class="text-white small opacity-50">PNG, JPG, JPEG</span>
+                <div class="col-md-6">
+                    <div class="compact-upload" onclick="document.getElementById('id_image').click()">
+                        <i class="ri-image-add-line upload-icon"></i>
+                        <div class="text-start">
+                            <p class="m-0 small fw-bold text-dark">Cover Image (Optional)</p>
+                            <span class="text-muted" style="font-size: 0.7rem;">Click to upload JPG or PNG</span>
                         </div>
                         <input type="file" id="id_image" name="image" accept="image/*" hidden>
                     </div>
                 </div>
 
-                <div class="col-12 mt-5">
-                    <button type="submit" class="btn-action">
-                        Commit to Library <i class="ri-save-3-fill fs-4"></i>
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn-submit">
+                        <i class="ri-save-fill fs-5"></i> Commit to Library Inventory
                     </button>
                 </div>
             </div>
@@ -215,10 +169,12 @@
     </div>
 
     <script>
+        // Feedback pour l'upload
         document.getElementById('id_image').addEventListener('change', function(e) {
             if(this.files && this.files[0]) {
-                document.getElementById('file-name').innerText = "Selected: " + this.files[0].name;
-                document.getElementById('file-name').parentElement.parentElement.style.borderColor = "#ff4757";
+                const name = this.files[0].name;
+                document.querySelector('.compact-upload p').innerText = "File: " + name;
+                document.querySelector('.compact-upload').style.borderColor = "#ff4757";
             }
         });
     </script>
