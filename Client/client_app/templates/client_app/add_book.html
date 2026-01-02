@@ -8,215 +8,218 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #ff4757;
-            --dark-blue: #0f172a;
-            --glass-bg: rgba(255, 255, 255, 0.98);
+            --primary: #ff4757;
+            --text-white: #ffffff;
+            --text-label: #ff4757; /* Couleur vive pour les labels pour qu'ils ressortent */
+            --input-bg: rgba(0, 0, 0, 0.5); /* Fond plus sombre pour un contraste maximal avec le texte blanc */
         }
 
         body, html {
-            margin: 0; padding: 0; height: 100vh;
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background: url('{{ bg_image|default:"/static/images/default-bg.jpg" }}') center/cover no-repeat fixed;
             overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* Background avec image fixe et overlay */
-        .bg-layer {
+        /* Overlay de fond sombre pour détacher le formulaire */
+        .page-overlay {
             position: fixed; inset: 0;
-            background: url('{{ bg_image|default:"/static/images/default-bg.jpg" }}') center/cover no-repeat;
-            z-index: -2;
-        }
-
-        .overlay-layer {
-            position: fixed; inset: 0;
-            background: rgba(15, 23, 42, 0.45);
-            backdrop-filter: blur(2px);
+            background: rgba(0, 0, 0, 0.65);
             z-index: -1;
         }
 
-        .split-container {
-            display: flex; height: 100vh; width: 100vw;
+        .main-content {
+            width: 90%;
+            max-width: 1100px;
+            z-index: 10;
         }
 
-        /* Zone Gauche Fixe (Visuelle) */
-        .visual-panel {
-            flex: 1; display: none;
-            position: relative;
+        .minimal-header h1 { 
+            font-weight: 800; font-size: 3.2rem; color: var(--text-white); 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .minimal-header p { 
+            color: var(--text-white); opacity: 0.9; font-size: 1.1rem; font-weight: 500;
         }
 
-        /* Zone Droite (Formulaire avec Diagonale) */
-        .form-panel {
-            flex: 1.4;
-            background: var(--glass-bg);
-            position: relative;
-            display: flex; flex-direction: column;
-            clip-path: polygon(12% 0, 100% 0, 100% 100%, 0% 100%);
-            padding: 2rem 4rem;
-            animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- STYLES LISIBILITÉ INPUTS --- */
+        .glass-input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Label avec ombre portée pour lecture sur fond complexe */
+        .glass-input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+            color: var(--text-label);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
-        .form-wrapper {
-            width: 100%; max-width: 700px;
-            margin-left: 10%; overflow-y: auto;
-            padding-right: 15px;
-        }
-        .form-wrapper::-webkit-scrollbar { width: 5px; }
-        .form-wrapper::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-        /* Header interne */
-        .back-nav {
-            display: inline-flex; align-items: center;
-            color: var(--text-muted); text-decoration: none;
-            font-weight: 600; font-size: 0.9rem; margin-bottom: 2rem;
-            transition: color 0.3s;
-        }
-        .back-nav:hover { color: var(--primary-color); }
-
-        .brand-section { margin-bottom: 3rem; }
-        .main-title { font-size: 2.5rem; font-weight: 800; color: var(--dark-blue); }
-        .sub-title { color: #64748b; font-weight: 500; }
-
-        /* Grille de formulaire */
-        .input-group-custom {
-            margin-bottom: 1.5rem; border-bottom: 2px solid #f1f5f9;
-            transition: border-color 0.3s ease;
-        }
-        .input-group-custom:focus-within { border-bottom-color: var(--primary-color); }
-
-        .field-label {
-            font-size: 0.75rem; font-weight: 800; color: #94a3b8;
-            text-transform: uppercase; margin-bottom: 5px; display: block;
-        }
-
-        .form-control-custom {
-            width: 100%; border: none; background: transparent;
-            padding: 10px 0; outline: none; font-weight: 600;
-        }
-
-        /* Drop Zone de fichier */
-        .drop-zone {
-            border: 2px dashed #e2e8f0; border-radius: 16px;
-            padding: 2rem; text-align: center; cursor: pointer;
-            transition: all 0.3s ease; margin-top: 1rem;
-        }
-        .drop-zone:hover { border-color: var(--primary-color); background: #fff8f8; }
-        .drop-icon { font-size: 2rem; color: var(--primary-color); margin-bottom: 10px; }
-
-        /* Bouton Action */
-        .btn-submit {
-            background: var(--primary-color); color: white;
-            border: none; padding: 1rem 2rem; border-radius: 50px;
-            font-weight: 700; width: 100%; margin-top: 2rem;
-            box-shadow: 0 10px 20px rgba(255, 71, 87, 0.25);
+        .input-control {
+            width: 100%;
+            background: var(--input-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: var(--text-white);
+            font-size: 1.05rem;
+            font-weight: 600;
+            outline: none;
             transition: all 0.3s ease;
         }
-        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255, 71, 87, 0.4); }
 
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        /* Placeholder plus clair */
+        .input-control::placeholder { color: rgba(255, 255, 255, 0.5); font-weight: 400; }
+
+        .input-control:focus {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: var(--primary);
+            box-shadow: 0 0 25px rgba(255, 71, 87, 0.3);
+            transform: translateY(-2px);
         }
 
-        @media (min-width: 992px) { .visual-panel { display: block; } }
-        @media (max-width: 991px) {
-            .form-panel { clip-path: none; flex: 1; padding: 2rem; }
-            .form-wrapper { margin-left: 0; }
-            body { overflow-y: auto; }
+        /* Upload Zone Haute Visibilité */
+        .minimal-upload {
+            background: var(--input-bg);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
         }
+        .minimal-upload:hover { 
+            border-color: var(--primary); 
+            background: rgba(255, 71, 87, 0.1);
+        }
+        .minimal-upload i { color: var(--primary); font-size: 2rem; }
+        .upload-text-main { color: white; font-weight: 700; display: block; }
+
+        /* Bouton Action Principal */
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 45px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        }
+        .btn-action:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 71, 87, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .status-badge {
+            position: fixed; top: 30px; right: 30px;
+            padding: 12px 25px; border-radius: 50px;
+            background: rgba(0, 184, 148, 0.9);
+            color: white; font-weight: 700; z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: fadeInRight 0.5s ease-out;
+        }
+
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-    <div class="bg-layer"></div>
-    <div class="overlay-layer"></div>
+    <div class="page-overlay"></div>
 
-    <div class="split-container">
-        <div class="visual-panel"></div>
-
-        <div class="form-panel shadow-lg">
-            
-            <div class="form-wrapper">
-                <a href="{% url 'dashboard' %}" class="back-nav">
-                    <i class="ri-arrow-left-s-line"></i> Back to dashboard
-                </a>
-
-                <header class="brand-section">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <i class="ri-book-3-fill fs-1 text-primary"></i>
-                        <h1 class="main-title mb-0">Add New Book</h1>
-                    </div>
-                    <p class="sub-title">Enrich your library catalog with a new inventory entry.</p>
-                </header>
-
-                <form method="post" enctype="multipart/form-data" class="add-book-form">
-                    {% csrf_token %}
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="input-group-custom">
-                                <label class="field-label" for="id_title">Book Title *</label>
-                                <input type="text" id="id_title" name="title" class="form-control-custom" placeholder="e.g., The Distributed System Handbook" required>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="input-group-custom">
-                                <label class="field-label" for="id_author">Author *</label>
-                                <input type="text" id="id_author" name="author" class="form-control-custom" placeholder="e.g., Jane Doe" required>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="input-group-custom">
-                                <label class="field-label" for="id_isbn">ISBN-13 *</label>
-                                <input type="text" id="id_isbn" name="isbn" class="form-control-custom" placeholder="978-XXXXXXXXXX" required>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="input-group-custom">
-                                <label class="field-label" for="id_copies">Stock Quantity *</label>
-                                <input type="number" id="id_copies" name="copies" class="form-control-custom" min="1" value="1" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <label class="field-label">Book Cover Image</label>
-                        <div class="drop-zone" onclick="document.getElementById('id_image').click()">
-                            <i class="ri-upload-cloud-2-line drop-icon"></i>
-                            <div class="drop-text">
-                                <p class="mb-1 fw-bold">Drag & drop cover here</p>
-                                <span class="text-muted small">or click to browse files (JPG, PNG)</span>
-                            </div>
-                            <input type="file" id="id_image" name="image" accept="image/*" hidden>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-submit">
-                        <i class="ri-save-3-line me-2"></i> Save Book to Inventory
-                    </button>
-
-                    <p class="text-center mt-4 small text-muted">
-                        Logged in as: <span class="fw-bold text-dark">{{ username }}</span>
-                    </p>
-                </form>
-            </div>
+    {% if message and success %}
+        <div class="status-badge">
+            <i class="ri-checkbox-circle-fill"></i> {{ message }}
         </div>
+    {% endif %}
+
+    <div class="main-content">
+        <header class="minimal-header mb-5 d-flex justify-content-between align-items-end">
+            <div>
+                <h1>New Inventory</h1>
+                <p>Register a new book into the system</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-light rounded-3 px-4 py-2 mb-3 fw-bold border-2">
+                <i class="ri-arrow-go-back-line"></i> Dashboard
+            </a>
+        </header>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                <div class="col-md-8">
+                    <div class="glass-input-group">
+                        <label for="id_title">Official Book Title</label>
+                        <input type="text" id="id_title" name="title" class="input-control" placeholder="e.g. Design Patterns" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-input-group">
+                        <label for="id_isbn">ISBN Code</label>
+                        <input type="text" id="id_isbn" name="isbn" class="input-control" placeholder="978-XXXXXXXX" required>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="glass-input-group">
+                        <label for="id_author">Primary Author</label>
+                        <input type="text" id="id_author" name="author" class="input-control" placeholder="Full Name" required>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="glass-input-group">
+                        <label for="id_copies">Quantity</label>
+                        <input type="number" id="id_copies" name="copies" class="input-control" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label class="glass-input-group label" style="font-size: 0.8rem; font-weight: 800; color: var(--text-label);">Cover Asset</label>
+                    <div class="minimal-upload" onclick="document.getElementById('id_image').click()">
+                        <i class="ri-folder-add-fill"></i>
+                        <div>
+                            <span id="file-name" class="upload-text-main">Choose cover file</span>
+                            <span class="text-white small opacity-50">PNG, JPG, JPEG</span>
+                        </div>
+                        <input type="file" id="id_image" name="image" accept="image/*" hidden>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-5">
+                    <button type="submit" class="btn-action">
+                        Commit to Library <i class="ri-save-3-fill fs-4"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Micro-interaction pour afficher le nom du fichier sélectionné
         document.getElementById('id_image').addEventListener('change', function(e) {
-            let fileName = e.target.files[0].name;
-            document.querySelector('.drop-text p').innerText = "File selected: " + fileName;
-            document.querySelector('.drop-zone').style.borderColor = "#ff4757";
+            if(this.files && this.files[0]) {
+                document.getElementById('file-name').innerText = "Selected: " + this.files[0].name;
+                document.getElementById('file-name').parentElement.parentElement.style.borderColor = "#ff4757";
+            }
         });
     </script>
 </body>
