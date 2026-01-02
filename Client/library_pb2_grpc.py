@@ -39,6 +39,31 @@ class LibraryServiceStub(object):
                 request_serializer=library__pb2.LoginRequest.SerializeToString,
                 response_deserializer=library__pb2.LoginResponse.FromString,
                 _registered_method=True)
+        self.CreateMember = channel.unary_unary(
+                '/library_system.LibraryService/CreateMember',
+                request_serializer=library__pb2.Member.SerializeToString,
+                response_deserializer=library__pb2.StatusResponse.FromString,
+                _registered_method=True)
+        self.UpdateMember = channel.unary_unary(
+                '/library_system.LibraryService/UpdateMember',
+                request_serializer=library__pb2.Member.SerializeToString,
+                response_deserializer=library__pb2.StatusResponse.FromString,
+                _registered_method=True)
+        self.DeleteMember = channel.unary_unary(
+                '/library_system.LibraryService/DeleteMember',
+                request_serializer=library__pb2.UserIdRequest.SerializeToString,
+                response_deserializer=library__pb2.StatusResponse.FromString,
+                _registered_method=True)
+        self.GetAllMembers = channel.unary_stream(
+                '/library_system.LibraryService/GetAllMembers',
+                request_serializer=library__pb2.SearchRequest.SerializeToString,
+                response_deserializer=library__pb2.Member.FromString,
+                _registered_method=True)
+        self.GetMemberDetail = channel.unary_unary(
+                '/library_system.LibraryService/GetMemberDetail',
+                request_serializer=library__pb2.UserIdRequest.SerializeToString,
+                response_deserializer=library__pb2.Member.FromString,
+                _registered_method=True)
         self.CreateBook = channel.unary_unary(
                 '/library_system.LibraryService/CreateBook',
                 request_serializer=library__pb2.Book.SerializeToString,
@@ -95,6 +120,36 @@ class LibraryServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def UserLogin(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateMember(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateMember(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteMember(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAllMembers(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMemberDetail(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -167,6 +222,31 @@ def add_LibraryServiceServicer_to_server(servicer, server):
                     servicer.UserLogin,
                     request_deserializer=library__pb2.LoginRequest.FromString,
                     response_serializer=library__pb2.LoginResponse.SerializeToString,
+            ),
+            'CreateMember': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateMember,
+                    request_deserializer=library__pb2.Member.FromString,
+                    response_serializer=library__pb2.StatusResponse.SerializeToString,
+            ),
+            'UpdateMember': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateMember,
+                    request_deserializer=library__pb2.Member.FromString,
+                    response_serializer=library__pb2.StatusResponse.SerializeToString,
+            ),
+            'DeleteMember': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteMember,
+                    request_deserializer=library__pb2.UserIdRequest.FromString,
+                    response_serializer=library__pb2.StatusResponse.SerializeToString,
+            ),
+            'GetAllMembers': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetAllMembers,
+                    request_deserializer=library__pb2.SearchRequest.FromString,
+                    response_serializer=library__pb2.Member.SerializeToString,
+            ),
+            'GetMemberDetail': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMemberDetail,
+                    request_deserializer=library__pb2.UserIdRequest.FromString,
+                    response_serializer=library__pb2.Member.SerializeToString,
             ),
             'CreateBook': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateBook,
@@ -246,6 +326,141 @@ class LibraryService(object):
             '/library_system.LibraryService/UserLogin',
             library__pb2.LoginRequest.SerializeToString,
             library__pb2.LoginResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateMember(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library_system.LibraryService/CreateMember',
+            library__pb2.Member.SerializeToString,
+            library__pb2.StatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateMember(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library_system.LibraryService/UpdateMember',
+            library__pb2.Member.SerializeToString,
+            library__pb2.StatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteMember(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library_system.LibraryService/DeleteMember',
+            library__pb2.UserIdRequest.SerializeToString,
+            library__pb2.StatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAllMembers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/library_system.LibraryService/GetAllMembers',
+            library__pb2.SearchRequest.SerializeToString,
+            library__pb2.Member.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetMemberDetail(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library_system.LibraryService/GetMemberDetail',
+            library__pb2.UserIdRequest.SerializeToString,
+            library__pb2.Member.FromString,
             options,
             channel_credentials,
             insecure,
