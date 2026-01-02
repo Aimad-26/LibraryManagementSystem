@@ -146,7 +146,17 @@ class LibraryClient:
     # ----------------------------------------------------
     # E. User Management (List, Get, Delete) 🚀 NOUVEAU 🚀
     # ----------------------------------------------------
-    
+    def borrow_book(self, member_id, book_id):
+        """Appelle le serveur pour enregistrer un emprunt."""
+        request = library_pb2.BorrowRequest(
+            member_id=str(member_id),
+            book_id=int(book_id)
+        )
+        try:
+            return self.stub.BorrowBook(request)
+        except grpc.RpcError as e:
+            print(f"Erreur gRPC : {e.details()}")
+            return library_pb2.StatusResponse(success=False, message="Le serveur gRPC ne répond pas.")
     def get_all_users(self):
         """Appelle le RPC GetAllUsers pour récupérer tous les utilisateurs."""
         request = library_pb2.SearchRequest(query="")
