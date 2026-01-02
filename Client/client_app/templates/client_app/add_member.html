@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrire un Membre | Gestion Bibliothèque</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+    <div class="login-container dashboard-container" style="max-width: 500px; margin-top: 50px;">
+        <div class="header-controls">
+            <h1>👤 Nouveau Membre</h1>
+        </div>
+        <hr>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-field">
+                <label for="full_name">Nom Complet</label>
+                <input type="text" id="full_name" name="full_name" placeholder="Ex: Ahmed Mansouri" required>
+            </div>
+
+            <div class="form-field">
+                <label for="email">Adresse Email</label>
+                <input type="email" id="email" name="email" placeholder="email@exemple.com" required>
+            </div>
+
+            <div class="form-field">
+                <label for="phone">Téléphone / Identifiant</label>
+                <input type="text" id="phone" name="phone" placeholder="Numéro de téléphone ou ID">
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="action-button-primary" style="width: 100%; background-color: #3f72af;">
+                    ✅ Créer le profil membre
+                </button>
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'members_list' %}" class="nav-button" style="background-color: #6c757d;">
+                ⬅️ Retour à la liste
+            </a>
+        </div>
+    </div>
+</body>
+</html>
