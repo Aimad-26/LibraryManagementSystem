@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
+from django.db import models
 
 class Book(models.Model):
     title = models.CharField(max_length=200, help_text="Title of the book.")
@@ -35,12 +35,4 @@ class Loan(models.Model):
 
     def __str__(self):
         return f"Loan of {self.book.title} to {self.patron.user.username}"
-class Client(models.Model):
-    nom = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    telephone = models.CharField(max_length=20)
-    adresse = models.TextField()
-    date_inscription = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.nom   
+    

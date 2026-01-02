@@ -44,4 +44,3 @@ This project demonstrates a clean **client–server architecture** designed to s
 
 ## 📁 Project Structure (Example)
 
-"# LibraryManagementSystem" 

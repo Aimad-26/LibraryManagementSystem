@@ -205,12 +205,7 @@
             <a href="{% url 'users_list' %}" class="sidebar-link">
                 📖 Users
             </a>
-            <a href="{% url 'clients_list' %}" class="sidebar-link">
-                👥  Clients
-            </a>
-            <a href="{% url 'emprunts_list' %}" class="sidebar-link">
-                📚 Emprunts
-            </a>
+            
             <!-- <a href="#" class="sidebar-link">
                 {% comment %}  Returns {% endcomment %}
             </a> -->
@@ -318,82 +313,74 @@
             </section>
 
             <!-- RESULTS TABLE -->
-            <!-- ============= BOOKS GALLERY (cards instead of table) ============= -->
-<section class="dashboard-section books-section">
-    {% if book_results %}
-        <div class="books-section-header">
-            <h3 class="section-subtitle">
-                Found {{ book_results|length }} Books
-            </h3>
-            <p class="books-section-caption">
-                Browse your catalog visually. Click a book to manage its loans.
-            </p>
-        </div>
+            <section class="dashboard-section">
+                {% if book_results %}
+                    <h3 class="section-subtitle">
+                        Found {{ book_results|length }} Books:
+                    </h3>
 
-        <div class="books-grid">
-            {% for book in book_results %}
-                <article class="book-card">
-                    <div class="book-card-cover">
-                        {% if book.image_url %}
-                            <img src="{{ MEDIA_URL }}{{ book.image_url }}"
-                                 alt="{{ book.title }} Cover"
-                                 class="book-card-cover-img">
-                        {% else %}
-                            <div class="book-card-cover-placeholder">
-                                {{ book.title|first|default:"?" }}
-                            </div>
-                        {% endif %}
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>ISBN</th>
+                                    <th>Total Stock</th>
+                                    <th>Available</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in book_results %}
+                                <tr>
+                                    <td>{{ book.id }}</td>
+                                    <td>
+                                        {% if book.image_url %}
+                                            <img src="{{ MEDIA_URL }}{{ book.image_url }}"
+                                                 alt="{{ book.title }} Cover"
+                                                 class="book-cover">
+                                        {% else %}
+                                            🖼️
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ book.title }}</td>
+                                    <td>{{ book.author }}</td>
+                                    <td>{{ book.isbn }}</td>
+                                    <td>{{ book.total_copies }}</td>
+                                    <td class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
+                                        {{ book.available_copies }}
+                                    </td>
+                                    <td>
+                                        {% if book.available_copies > 0 %}
+                                            <a href="#" class="action-link available-stock">
+                                                Borrow
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'return_book' %}?book_id={{ book.id }}"
+                                               class="action-link unavailable-stock">
+                                                Return
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="book-card-body">
-                        <h4 class="book-card-title">{{ book.title }}</h4>
-                        <p class="book-card-author">{{ book.author }}</p>
-                        <p class="book-card-isbn">ISBN: {{ book.isbn }}</p>
-
-                        <div class="book-card-stats">
-                            <span class="book-card-total">
-                                Stock: {{ book.total_copies }}
-                            </span>
-
-                            <span class="book-card-availability
-                                {% if book.available_copies > 0 %}
-                                    book-card-availability-ok
-                                {% else %}
-                                    book-card-availability-bad
-                                {% endif %}
-                            ">
-                                {{ book.available_copies }} available
-                            </span>
-                        </div>
-
-                        <div class="book-card-actions">
-                            {% if book.available_copies > 0 %}
-                                <a href="#"
-                                   class="book-card-btn">
-                                    Borrow
-                                </a>
-                            {% else %}
-                                <a href="{% url 'return_book' %}?book_id={{ book.id }}"
-                                   class="book-card-btn book-card-btn-alt">
-                                    Return
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </article>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="no-results">
-            No results found for query "{{ query }}".
-        </p>
-    {% endif %}
-</section>
-
-<!-- ============================================================ -->
+                {% else %}
+                    <p class="no-results">
+                        No results found for query "{{ query }}".
+                    </p>
+                {% endif %}
+            </section>
 
         </div>
     </main>
+</div>
+
 <!-- =============== JS: open / close side panel =============== -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {

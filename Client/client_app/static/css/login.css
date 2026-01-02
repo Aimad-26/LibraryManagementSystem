@@ -167,13 +167,13 @@ body {
 
 /* FIRST button (space below) */
 .primary-btn {
-    background: var(--primary-btn);
+    background: #7c3aed;
     color: #ffffff;
     margin-bottom: 14px !important;     /* ← added spacing */
 }
 
 .primary-btn:hover {
-    background: #0069d9;
+    background: #7c3aed;
 }
 
 /* SECOND button */

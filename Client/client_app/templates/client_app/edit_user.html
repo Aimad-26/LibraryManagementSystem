@@ -1,4 +1,4 @@
-{% load static %}
+{% comment %} {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} | Gestion Utilisateurs</title>
     
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}"> 
+    <link rel="stylesheet" href="{% static 'css/edit_user.css' %}">
+    {% comment %} <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">  {% endcomment %}
     
     <style>
         .form-section-title { margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #333; }
@@ -20,7 +20,7 @@
         /* L'alerte de sécurité n'est plus nécessaire car le champ est retiré */
     </style>
 </head>
-<body>
+{% comment %} <body>
     <div class="login-container dashboard-container">
         
         <div class="header-controls" style="justify-content: space-between;">
@@ -70,5 +70,106 @@
         </form>
 
     </div>
+</body>
+</html> {% endcomment %} 
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Gestion Utilisateurs</title>
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
+
+    <!-- NEW CSS file (create it in step 2) -->
+    <link rel="stylesheet" href="{% static 'css/edit_user.css' %}?v=1">
+</head>
+
+<body class="auth-page" style="--auth-bg: url('{% static 'images/auth-bg.webp' %}');">
+
+    <!-- Background overlay -->
+    <div class="auth-bg"></div>
+
+    <!-- “Modal” Card -->
+    <div class="auth-modal">
+
+        <!-- Close button (go back to list) -->
+        <a class="auth-close" href="{% url 'users_list' %}" aria-label="Close">×</a>
+
+        <!-- Logo / Title -->
+        <div class="auth-header">
+            <img class="auth-logo" src="{% static 'images/logo.png' %}" alt="Logo">
+            <h1 class="auth-title">Edit user</h1>
+            <p class="auth-subtitle">
+                ID: <strong>{{ user_id }}</strong> ·
+                Status: <strong>{{ user_details.is_active|yesno:"Active, Disabled" }}</strong>
+            </p>
+        </div>
+
+        {% if error_message %}
+            <div class="auth-alert auth-alert-error">{{ error_message }}</div>
+        {% elif success_message %}
+            <div class="auth-alert auth-alert-success">{{ success_message }}</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'edit_user' user_id=user_id %}" class="edit-user-form">
+            {% csrf_token %}
+
+            <div class="auth-section">
+                <h3 class="auth-section-title">Account information</h3>
+
+                <div class="auth-field">
+                    <label for="id_username">Username *</label>
+                    <input type="text" id="id_username" name="username"
+                           value="{{ user_details.username }}" required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="id_email">Email</label>
+                    <input type="email" id="id_email" name="email"
+                           value="{{ user_details.email|default:'' }}">
+                </div>
+            </div>
+
+            <div class="auth-section">
+                <h3 class="auth-section-title">Password update</h3>
+                <p class="auth-help">
+                    Fill this only if you want to change the user password.
+                </p>
+
+                <div class="auth-field auth-field-password">
+                    <label for="id_new_password">New password</label>
+                    <input type="password" id="id_new_password" name="new_password">
+
+                    <!-- show/hide password -->
+                    <button type="button" class="auth-eye" aria-label="Show password"
+                            onclick="togglePwd('id_new_password', this)">👁</button>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-submit">
+                💾 Save changes
+            </button>
+
+            <p class="auth-footer">
+                <a href="{% url 'users_list' %}">Back to users list</a>
+            </p>
+        </form>
+
+    </div>
+
+<script>
+function togglePwd(inputId, btn){
+    const el = document.getElementById(inputId);
+    if(!el) return;
+    const isPwd = el.type === "password";
+    el.type = isPwd ? "text" : "password";
+    btn.textContent = isPwd ? "🙈" : "👁";
+}
+</script>
+
 </body>
 </html>

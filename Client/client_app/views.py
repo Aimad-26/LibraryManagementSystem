@@ -1,31 +1,10 @@
 # In Client/client_app/views.py
 
-from django.contrib import messages
-from .models import Client
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
 from django.urls import reverse
 from django.core.files.storage import FileSystemStorage 
 from .grpc_client import LibraryClient 
-from django.contrib import messages
-from django.db.models import Q
-###commendes####
-from django.shortcuts import  get_object_or_404
-
-from django.http import JsonResponse
-from datetime import datetime, timedelta
-from client_app.models import Client
-
-from .models import Client, Loan, Book
-
-
-
-
-
-
-
-
-
 # NOTE: LibraryClient est importé ici et non dans les fonctions individuelles
 
 # ----------------------------------------------------
@@ -169,9 +148,15 @@ def create_user(request: HttpRequest):
     """
     Handles the creation of a new Staff/Librarian account.
     """
+    # ✅ same media images used in login
+    bg_image = "book_covers/Background.jpg"
+    logo_image = "book_covers/ismac_logo.png"
+
     context = {
-        'username_session': request.session.get('username'), 
-        'title': "Créer un nouvel utilisateur"
+        'username_session': request.session.get('username'),
+        'title': "Créer un nouvel utilisateur",
+        'bg_image': bg_image,
+        'logo_image': logo_image,
     }
 
     if request.method == 'POST':
@@ -377,193 +362,3 @@ def staff_profile(request: HttpRequest):
 
     # Re-render the page with success/error messages
     return render(request, 'client_app/staff_profile.html', context)
-#### client ####
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.db.models import Q
-from .models import Client  # Assure-toi que ce modèle existe
-
-# Liste des clients
-def clients_list(request):
-    query = request.GET.get('q', '')
-    
-    if query:
-        clients = Client.objects.filter(
-            Q(nom__icontains=query) |
-            Q(prenom__icontains=query) |
-            Q(email__icontains=query)
-        )
-    else:
-        clients = Client.objects.all()
-    
-    context = {
-        'clients': clients,
-        'query': query,
-        'message': request.GET.get('message', ''),
-        'error_message': request.GET.get('error', ''),
-    }
-    return render(request, 'clients_list.html', context)
-
-# Créer un client
-def create_client(request):
-    if request.method == 'POST':
-        # On récupère les données envoyées par le formulaire HTML
-        nom = request.POST.get('nom')
-        prenom = request.POST.get('prenom')
-        email = request.POST.get('email')
-        telephone = request.POST.get('telephone')
-
-        # On crée le client dans la base de données
-        Client.objects.create(
-            nom=nom,
-            prenom=prenom,
-            email=email,
-            telephone=telephone
-        )
-        
-        # Une fois enregistré, on redirige vers la liste des clients
-        return redirect('clients_list')
-
-    # Si c'est un GET, on affiche juste le formulaire
-    return render(request, 'client_app/create_client.html')
-# Voir détails d'un client
-def view_client(request, client_id):
-    client = get_object_or_404(Client, id=client_id)
-    return render(request, 'view_client.html', {'client': client})
-
-# Éditer un client
-def edit_client(request, client_id):
-    # 1. On récupère le client spécifique
-    client = get_object_or_404(Client, id=client_id)
-
-    if request.method == 'POST':
-        # 2. On récupère les nouvelles données du formulaire
-        client.nom = request.POST.get('nom')
-        client.prenom = request.POST.get('prenom')
-        client.email = request.POST.get('email')
-        client.telephone = request.POST.get('telephone')
-        
-        # 3. On sauvegarde dans la base de données
-        client.save()
-        
-        # 4. On redirige vers la liste
-        return redirect('clients_list')
-
-    # Si c'est un GET, on affiche le formulaire avec les données actuelles
-    return render(request, 'client_app/edit_client.html', {'client': client})
-# Supprimer un client
-def delete_client_action(request, client_id):
-    if request.method == 'POST':
-        client = get_object_or_404(Client, id=client_id)
-        client.delete()
-        messages.success(request, 'Client supprimé avec succès!')
-    return redirect('clients_list')
-#######Commendes#######
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.utils import timezone
-from .models import Emprunt
-from django.db.models import Q
-
-def emprunts_list(request):
-    """Liste tous les emprunts avec recherche"""
-    search_query = request.GET.get('search', '')
-    
-    emprunts = Emprunt.objects.all()
-    
-    # Mise à jour automatique des statuts en retard
-    for emprunt in emprunts:
-        if emprunt.is_overdue() and emprunt.status == 'active':
-            emprunt.status = 'overdue'
-            emprunt.save()
-    
-    # Recherche
-    if search_query:
-        emprunts = emprunts.filter(
-            Q(book_title__icontains=search_query) |
-            Q(borrower_name__icontains=search_query) |
-            Q(borrower_email__icontains=search_query)
-        )
-    
-    # Statistiques
-    stats = {
-        'active': Emprunt.objects.filter(status='active').count(),
-        'overdue': Emprunt.objects.filter(status='overdue').count(),
-        'returned': Emprunt.objects.filter(status='returned').count(),
-        'total': Emprunt.objects.count(),
-    }
-    
-    context = {
-        'emprunts': emprunts,
-        'stats': stats,
-        'search_query': search_query,
-    }
-    
-    return render(request, 'client_app/emprunts_list.html', context)
-
-
-def add_emprunt(request):
-    """Ajouter un nouvel emprunt"""
-    if request.method == 'POST':
-        book_title = request.POST.get('book_title')
-        borrower_name = request.POST.get('borrower_name')
-        borrower_email = request.POST.get('borrower_email')
-        borrow_date = request.POST.get('borrow_date')
-        return_date = request.POST.get('return_date')
-        notes = request.POST.get('notes', '')
-        
-        emprunt = Emprunt.objects.create(
-            book_title=book_title,
-            borrower_name=borrower_name,
-            borrower_email=borrower_email,
-            borrow_date=borrow_date,
-            return_date=return_date,
-            notes=notes,
-            status='active'
-        )
-        
-        messages.success(request, f'Emprunt ajouté avec succès pour {borrower_name}')
-        return redirect('emprunts_list')
-    
-    return render(request, 'client_app/add_emprunt.html')
-
-
-def return_emprunt(request, emprunt_id):
-    """Marquer un emprunt comme retourné"""
-    emprunt = get_object_or_404(Emprunt, id=emprunt_id)
-    emprunt.status = 'returned'
-    emprunt.actual_return_date = timezone.now().date()
-    emprunt.save()
-    
-    messages.success(request, f'Le livre "{emprunt.book_title}" a été marqué comme retourné')
-    return redirect('emprunts_list')
-
-
-def delete_emprunt(request, emprunt_id):
-    """Supprimer un emprunt"""
-    emprunt = get_object_or_404(Emprunt, id=emprunt_id)
-    book_title = emprunt.book_title
-    emprunt.delete()
-    
-    messages.success(request, f'L\'emprunt de "{book_title}" a été supprimé')
-    return redirect('emprunts_list')
-
-
-def edit_emprunt(request, emprunt_id):
-    """Modifier un emprunt"""
-    emprunt = get_object_or_404(Emprunt, id=emprunt_id)
-    
-    if request.method == 'POST':
-        emprunt.book_title = request.POST.get('book_title')
-        emprunt.borrower_name = request.POST.get('borrower_name')
-        emprunt.borrower_email = request.POST.get('borrower_email')
-        emprunt.borrow_date = request.POST.get('borrow_date')
-        emprunt.return_date = request.POST.get('return_date')
-        emprunt.notes = request.POST.get('notes', '')
-        emprunt.save()
-        
-        messages.success(request, 'Emprunt modifié avec succès')
-        return redirect('emprunts_list')
-    
-    context = {'emprunt': emprunt}
-    return render(request, 'client_app/edit_emprunt.html', context)

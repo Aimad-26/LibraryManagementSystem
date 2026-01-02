@@ -1,5 +1,5 @@
 {% load static %}
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -19,8 +19,8 @@
         .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
-</head>
-<body>
+</head> {% endcomment %}
+{% comment %} <body>
     <div class="login-container dashboard-container">
         
         <div class="header-controls" style="justify-content: space-between;">
@@ -72,5 +72,91 @@
         </form>
 
     </div>
+</body>
+</html> {% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ title }} | Gestion Utilisateurs</title>
+
+  <!-- Reuse your auth modal CSS -->
+  <link rel="stylesheet" href="{% static 'css/edit_user.css' %}?v=2">
+</head>
+
+<body class="auth-page">
+
+  <!-- Background image layer -->
+  <div class="auth-bg" style="--auth-bg: url('{{ MEDIA_URL }}{{ bg_image }}');"></div>
+
+  <!-- Center modal card -->
+  <div class="auth-modal">
+
+    <!-- Close button -->
+    <a class="auth-close" href="{% url 'dashboard' %}" aria-label="Close">×</a>
+
+    <!-- Header -->
+    <div class="auth-header">
+      <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="auth-logo">
+      <h1 class="auth-title">Create an account</h1>
+      <p class="auth-subtitle">Create a new staff user</p>
+    </div>
+
+    {% if message %}
+      <div class="auth-alert {% if success %}auth-alert-success{% else %}auth-alert-error{% endif %}">
+        {{ message }}
+      </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'create_user' %}" class="auth-form">
+      {% csrf_token %}
+
+      <div class="auth-field">
+        <label for="id_username">Login *</label>
+        <input class="auth-input" type="text" id="id_username" name="username"
+               value="{{ username|default:'' }}" required placeholder="Username">
+      </div>
+
+      <div class="auth-field">
+        <label for="id_email">Email (Optionnel)</label>
+        <input class="auth-input" type="email" id="id_email" name="email"
+               value="{{ email|default:'' }}" placeholder="mail@gmail.com">
+      </div>
+
+      <div class="auth-field auth-field-password">
+        <label for="id_password">Password *</label>
+        <input class="auth-input" type="password" id="id_password" name="password" required>
+        <button type="button" class="auth-eye" aria-label="Show password"
+                onclick="togglePwd('id_password', this)">👁</button>
+      </div>
+
+      <div class="auth-field auth-field-password">
+        <label for="id_password_confirm">Confirm Password *</label>
+        <input class="auth-input" type="password" id="id_password_confirm" name="password_confirm" required>
+        <button type="button" class="auth-eye" aria-label="Show password confirm"
+                onclick="togglePwd('id_password_confirm', this)">👁</button>
+      </div>
+
+      <button type="submit" class="auth-submit">Sign Up</button>
+
+      <p class="auth-footer">
+        Already have an account? <a href="{% url 'staff_login' %}">Log in</a>
+      </p>
+    </form>
+
+  </div>
+
+  <script>
+    function togglePwd(inputId, btn) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      const isPwd = el.type === "password";
+      el.type = isPwd ? "text" : "password";
+      btn.textContent = isPwd ? "🙈" : "👁";
+    }
+  </script>
 </body>
 </html>

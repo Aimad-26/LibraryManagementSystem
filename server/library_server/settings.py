@@ -29,9 +29,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-import sys
-import os
-sys.path.append(os.path.join(BASE_DIR, '..', 'client_app'))
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'library_admin',
-   # 'client_app',
 ]
 
 MIDDLEWARE = [
@@ -77,16 +74,15 @@ WSGI_APPLICATION = 'library_server.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_library_project',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '3306',
-    }
+        'PORT': '3306'
+     }
 }
-
 
 
 
