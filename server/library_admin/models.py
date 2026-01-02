@@ -3,6 +3,19 @@ from django.contrib.auth.models import User
 
 from django.db import models
 
+class Member(models.Model):
+    
+    full_name = models.CharField(max_length=200, verbose_name="Nom Complet")
+    email = models.EmailField(unique=True, verbose_name="Adresse Email")
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Téléphone")
+    member_id = models.CharField(max_length=50, unique=True, verbose_name="ID Membre")
+    date_joined = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    max_loans = models.IntegerField(default=5, verbose_name="Nombre maximum de prêts")
+
+    def __str__(self):
+        return f"{self.full_name} ({self.member_id})"
+
 class Book(models.Model):
     title = models.CharField(max_length=200, help_text="Title of the book.")
     author = models.CharField(max_length=100)
