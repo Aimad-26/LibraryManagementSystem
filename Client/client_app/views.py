@@ -138,38 +138,29 @@ def add_book(request: HttpRequest):
 
     return render(request, 'client_app/add_book.html', context)
 
+# --- Section Membres dans client_app/views.py ---
 
-# ----------------------------------------------------
-# C. Staff Profile & User Management Views 
-# ----------------------------------------------------
 def members_list(request):
     """Affiche la liste complète des membres (clients)."""
+    if not request.session.get('staff_id'):
+        return redirect('staff_login')
+        
     client = LibraryClient()
+    # On récupère les membres via gRPC
     members = client.get_all_members() 
-    # Assurez-vous que le fichier s'appelle bien members.html dans vos templates
-    return render(request, 'client_app/members.html', {'members': members})
-def delete_member_action(request, member_id):
-    """Action de suppression physique gRPC et redirection immédiate."""
-    if request.method == 'POST':
-        client = LibraryClient()
-        client.delete_member(member_id)
-    return redirect('members_list')
-def edit_member(request, member_id):
-    """Affiche le formulaire et sauvegarde les modifications."""
-    client = LibraryClient()
     
-    if request.method == 'POST':
-        # Appel gRPC direct (Simplifié : pas de mot de passe admin requis)
-        client.update_member(
-            m_id=member_id,
-            name=request.POST.get('full_name'),
-            email=request.POST.get('email'),
-            phone=request.POST.get('phone')
-        )
-        return redirect('members_list')
-    
+    context = {
+        'members': members,
+        'title': "Gestion des Membres",
+        'username_session': request.session.get('username'),
+    }
+    return render(request, 'client_app/members.html', context)
+
 def add_member(request):
-    """Ajoute un nouveau client autonome."""
+    """Ajoute un nouveau client."""
+    if not request.session.get('staff_id'):
+        return redirect('staff_login')
+
     if request.method == 'POST':
         client = LibraryClient()
         client.create_member(
@@ -178,7 +169,42 @@ def add_member(request):
             phone=request.POST.get('phone')
         )
         return redirect('members_list')
-    return render(request, 'client_app/add_member.html')
+    
+    return render(request, 'client_app/add_member.html', {'title': "Inscrire un Membre"})
+
+def edit_member(request, member_id):
+    """Affiche le formulaire et sauvegarde les modifications."""
+    if not request.session.get('staff_id'):
+        return redirect('staff_login')
+        
+    client = LibraryClient()
+    
+    if request.method == 'POST':
+        client.update_member(
+            m_id=str(member_id), # gRPC attend souvent des strings pour les IDs
+            name=request.POST.get('full_name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone')
+        )
+        return redirect('members_list')
+    
+    # Si GET : on récupère les détails pour remplir le formulaire
+    member = client.get_member_detail(str(member_id))
+    return render(request, 'client_app/edit_member.html', {'member': member, 'title': "Modifier Membre"})
+
+def delete_member_action(request, member_id):
+    """Suppression physique via gRPC."""
+    if not request.session.get('staff_id'):
+        return redirect('staff_login')
+        
+    if request.method == 'POST':
+        client = LibraryClient()
+        client.delete_member(str(member_id))
+    return redirect('members_list')
+# ----------------------------------------------------
+# C. Staff Profile & User Management Views 
+# ----------------------------------------------------
+
     member = client.get_member_detail(member_id)
     return render(request, 'client_app/edit_member.html', {'member': member})
 # 🚀 1. CREATE USER VIEW
