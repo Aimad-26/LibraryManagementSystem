@@ -401,7 +401,20 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
 
         except Exception as e:
             return library_pb2.StatusResponse(success=False, message=str(e))
-
+    
+    def GetBook(self, request, context):
+        """Récupère un livre spécifique par ID (passé dans request.query)."""
+        try:
+            book = Book.objects.get(id=int(request.query))
+            return library_pb2.Book(
+                id=book.id, title=book.title, author=book.author,
+                isbn=book.isbn, total_copies=book.total_copies,
+                available_copies=book.available_copies,
+                image_url=str(book.image) if book.image else ""
+            )
+        except (Book.DoesNotExist, ValueError):
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return library_pb2.Book()
 # ----------------------------------------------------
 # 4. Server Initialization (Serve function remains the same)
 # ----------------------------------------------------
