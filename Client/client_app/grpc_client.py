@@ -119,6 +119,8 @@ class LibraryClient:
                 success=False, 
                 message=f"RPC Failed ({status_code.name}): {details}"
             )
+    def get_member_detail(self, m_id):
+        return self.stub.GetMemberDetail(library_pb2.UserIdRequest(user_id=str(m_id)))
     def create_member(self, full_name, email, phone):
         req = library_pb2.Member(full_name=full_name, email=email, phone=phone)
         return self.stub.CreateMember(req)        
