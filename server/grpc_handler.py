@@ -348,29 +348,24 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
 # ----------------------------------------------------
 
 def serve():
-    """Starts the gRPC server on the designated port 50051."""
+    """Démarrage forcé avec vérification des méthodes."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    library_pb2_grpc.add_LibraryServiceServicer_to_server(
-        LibraryServicer(), server)
     
-    server.add_insecure_port('[::]:50051') 
+    # On crée l'instance explicitement
+    servicer_instance = LibraryServicer()
+    
+    # IMPORTANTE VÉRIFICATION : Ce print va confirmer si la méthode est vue par Python
+    if hasattr(servicer_instance, 'GetAllMembers'):
+        print("✅ SUCCESS: La méthode GetAllMembers est bien détectée dans la classe.")
+    else:
+        print("❌ FATAL: La méthode GetAllMembers est INTROUVABLE dans la classe !")
+
+    library_pb2_grpc.add_LibraryServiceServicer_to_server(servicer_instance, server)
+    
+    # Changez le port ici pour être CERTAIN de ne pas utiliser un vieux tunnel
+    port = "50052" 
+    server.add_insecure_port(f'[::]:{port}')
     server.start()
-    print("gRPC Library Server started on port 50051")
     
-    try:
-        server.wait_for_termination()
-    except KeyboardInterrupt:
-        server.stop(0)
-        print("\nServer shut down gracefully.")
-
-
-if __name__ == '__main__':
-    try:
-        # Simple database check to ensure connection works before starting server
-        Book.objects.exists()
-        serve()
-    except OperationalError as e:
-        print("\n--- FATAL ERROR: DATABASE CONNECTION FAILED ---")
-        print("Please ensure your MySQL server is running and accessible.")
-    except Exception as e:
-        print(f"An unexpected error occurred during startup: {e}")
+    print(f"🚀 SERVEUR DÉMARRÉ SUR LE PORT {port}")
+    server.wait_for_termination()
