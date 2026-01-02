@@ -153,6 +153,23 @@ def delete_member_action(request, member_id):
         client = LibraryClient()
         client.delete_member(member_id)
     return redirect('members_list')
+def edit_member(request, member_id):
+    """Redirige vers une page séparée pour l'édition."""
+    client = LibraryClient()
+    
+    if request.method == 'POST':
+        # Sauvegarde simplifiée
+        client.update_member(
+            m_id=member_id,
+            name=request.POST.get('full_name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone')
+        )
+        return redirect('members_list')
+    
+    # Récupération des détails pour la page edit_member.html
+    member = client.get_member_detail(member_id)
+    return render(request, 'client_app/edit_member.html', {'member': member})
 # 🚀 1. CREATE USER VIEW
 def create_user(request: HttpRequest):
     """
