@@ -1,194 +1,246 @@
+{% extends "layout.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Librarian Dashboard | Transaction</title>
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <style>
-        /* Ajustements pour fusionner Dashboard.css et Bootstrap */
-        .transaction-card { 
-            border-radius: 12px; 
-            border: none; 
-            background: #ffffff;
-        }
-        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
-        .form-label { font-size: 0.85rem; letter-spacing: 0.05rem; margin-bottom: 0.5rem; }
-        .form-select-lg, .form-control-lg { font-size: 1rem; border-radius: 8px; }
-        
-        /* Harmonisation des boutons avec votre charte */
-        .btn-confirm { padding: 12px; border-radius: 8px; transition: all 0.3s; }
-        .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        
-        /* Masquer les bordures bleues de focus Bootstrap pour garder votre style */
-        .form-select:focus, .form-control:focus {
-            border-color: var(--primary-color, #0d6efd);
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
-        }
-    </style>
-</head>
-<body class="dashboard-page">
 
-<div class="profile-panel" id="profilePanel">
-    <div class="profile-panel-overlay" id="profileOverlay"></div>
-    <aside class="profile-panel-body">
-        <div class="profile-panel-header">
-            <button type="button" class="profile-panel-close" id="profileClose">×</button>
-            <div class="profile-panel-user">
-                <div class="profile-panel-avatar">👤</div>
-                <div>
-                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
-                    <p class="profile-panel-handle">@{{ username|default:"librarian" }}</p>
-                </div>
-            </div>
-            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">Edit Profile</a>
-        </div>
-        <nav class="profile-panel-menu">
-            <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
-                <span>Profile</span><span class="profile-panel-arrow">›</span>
-            </button>
-            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
-                <span>Log out</span><span class="profile-panel-arrow">›</span>
-            </button>
-        </nav>
-    </aside>
-</div>
+{% block title %}Emprunt & Retour | Librarian Dashboard{% endblock %}
 
-<div class="dashboard-layout">
-    <aside class="dashboard-sidebar">
-        <div class="sidebar-logo">
-            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
-        </div>
-        <nav class="sidebar-nav">
-            <p class="sidebar-section-label">LIBRARY</p>
-            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
-            <a href="{% url 'add_book' %}" class="sidebar-link">Add New Book</a>
-            <a href="{% url 'issue_book' %}" class="sidebar-link active">🚀 Issue a Book</a>
-            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users</a>
-            <a href="{% url 'members_list' %}" class="sidebar-link">📖 Members</a>
-            <p class="sidebar-section-label">ACCOUNT</p>
-            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
-        </nav>
-    </aside>
+{% block nav_issue %}active opacity-100{% endblock %}
+{% block breadcrumb_parent %}Transactions{% endblock %}
+{% block breadcrumb_active %}Process{% endblock %}
 
-    <main class="dashboard-main">
-        <div class="dashboard-main-inner">
-            <header class="topbar">
-                <div class="topbar-search">
-                    <span class="text-muted fw-light">System / Transactions / <strong>Process</strong></span>
-                </div>
-                <div class="topbar-user">
-                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
-                    <button type="button" class="topbar-avatar-btn" id="profileToggle">👤</button>
-                </div>
-            </header>
+{% block content %}
+<style>
+    /* --- SECTION HEADER / HERO --- */
+    .hero-banner-issue {
+        background: linear-gradient(135deg, #6366f1 0%, #112d4e 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 35px 45px;
+        margin: 20px;
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+        position: relative;
+    }
 
-            <section class="hero-banner">
-                <div class="hero-text-block">
-                    <p class="hero-eyebrow">Circulation Desk</p>
-                    <h1 class="hero-title">
-                        {% if is_return_mode %}📤 Return Processing{% else %}📥 Book Issue{% endif %}
-                    </h1>
-                    <p class="hero-subtitle">Update inventory status and member records instantly.</p>
-                </div>
-            </section>
+    .hero-eyebrow {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        opacity: 0.7;
+        margin-bottom: 5px;
+    }
 
+    .hero-title {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* --- FORM CARD DESIGN --- */
+    .transaction-card {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        padding: 40px;
+        margin: 0 20px 40px 20px;
+    }
+
+    /* --- INPUT & SELECT BOX DESIGN --- */
+    .input-group-custom {
+        margin-bottom: 22px;
+    }
+
+    .input-box {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 10px 20px;
+        transition: all 0.2s ease;
+    }
+
+    .input-box:focus-within {
+        border-color: #3f72af;
+        box-shadow: 0 0 0 3px rgba(63, 114, 175, 0.1);
+    }
+
+    .input-box label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+        text-align: left;
+    }
+
+    .input-box select, .input-box input {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #111827;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    /* --- BOUTON ANNULER PRO --- */
+    .btn-cancel-exit {
+       width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        color: #ffffff !important;
+          background-color: #ed4a21;
+    }
+
+    .btn-cancel-exit:hover {
+        color: #ffffff; /* Plus sombre au survol */
+        background-color: #305c26; /* Fond gris très léger */
+       
+        transform: translateY(-1px);
+    }
+    /* --- ACTION BUTTONS --- */
+    .btn-action-main {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        color: #ffffff !important;
+    }
+
+    .btn-issue { background: #111827; } /* Noir pro pour l'emprunt */
+    .btn-issue:hover { background: #1f2937; transform: translateY(-2px); }
+
+    .btn-return { background: #f59e0b; } /* Orange pro pour le retour */
+    .btn-return:hover { background: #d97706; transform: translateY(-2px); }
+
+    .btn-cancel {
+        color: #6b7280;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .btn-cancel:hover { color: #111827; }
+</style>
+
+<section class="hero-banner-issue shadow-sm">
+    <div class="hero-text-block text-start">
+        <p class="hero-eyebrow">Circulation Desk</p>
+        <h1 class="hero-title">
+            {% if is_return_mode %}
+                <span style="font-size: 2rem;">📤</span> Return Processing
+            {% else %}
+                <span style="font-size: 2rem;">📥</span> Book Issue
+            {% endif %}
+        </h1>
+        <p class="hero-subtitle lead mb-0 opacity-90" style="font-size: 1rem;">
+            Update inventory status and member records instantly.
+        </p>
+    </div>
+</section>
+
+<section class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <div class="transaction-card">
+            
             {% if messages %}
-                <div class="px-4 mt-3">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} rounded-3 border-0 shadow-sm mb-4 text-start small">
+                        {{ message }}
+                    </div>
+                {% endfor %}
             {% endif %}
 
-            <section class="dashboard-section py-4">
-                <div class="row justify-content-center">
-                    <div class="col-xxl-6 col-xl-8 col-lg-10">
-                        <div class="card transaction-card shadow-sm p-4 p-md-5">
-                            <form method="POST">
-                                {% csrf_token %}
-                                
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold text-uppercase text-muted">Identify Member</label>
-                                    <select name="member_id" class="form-select form-select-lg border-2" required>
-                                        <option value="" disabled selected>Search by name or ID...</option>
-                                        {% for member in members %}
-                                            <option value="{{ member.id }}">{{ member.full_name }} (Member ID: {{ member.id }})</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+            <form method="POST">
+                {% csrf_token %}
 
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold text-uppercase text-muted">Select Work</label>
-                                    <select name="book_id" class="form-select form-select-lg border-2" required>
-                                        <option value="" disabled>Search by Title or ISBN...</option>
-                                        {% for book in books %}
-                                            <option value="{{ book.id }}" 
-                                                {% if preselected_book_id == book.id|stringformat:"i" %}selected{% endif %}>
-                                                {{ book.title }} 
-                                                {% if book.available_copies > 0 %}
-                                                    (Available: {{ book.available_copies }})
-                                                {% else %}
-                                                    (⚠️ Awaiting Return)
-                                                {% endif %}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                {% if not is_return_mode %}
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold text-uppercase text-muted">Expected Return Date</label>
-                                    <input type="date" name="due_date" class="form-control form-control-lg border-2" value="{{ default_due_date }}">
-                                </div>
-                                {% endif %}
-
-                                <div class="d-grid gap-3 mt-5">
-                                    {% if is_return_mode %}
-                                        <button type="submit" name="action" value="return" class="btn btn-warning btn-confirm text-white fw-bold shadow-sm">
-                                            Confirm Book Return
-                                        </button>
-                                    {% else %}
-                                        <button type="submit" name="action" value="borrow" class="btn btn-success btn-confirm fw-bold shadow-sm">
-                                            Confirm Loan Issue
-                                        </button>
-                                    {% endif %}
-                                    
-                                    <a href="{% url 'dashboard' %}" class="btn btn-link text-decoration-none text-muted">
-                                        Cancel and exit
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
+                <div class="input-group-custom">
+                    <div class="input-box">
+                        <label>Identify Member *</label>
+                        <select name="member_id" required>
+                            <option value="" disabled selected>Search by name or ID...</option>
+                            {% for member in members %}
+                                <option value="{{ member.id }}">{{ member.full_name }} (ID: {{ member.id }})</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-            </section>
+
+                <div class="input-group-custom">
+                    <div class="input-box">
+                        <label>Select Work *</label>
+                        <select name="book_id" required>
+                            <option value="" disabled>Search by Title or ISBN...</option>
+                            {% for book in books %}
+                                <option value="{{ book.id }}" 
+                                    {% if preselected_book_id == book.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ book.title }} 
+                                    {% if book.available_copies > 0 %}
+                                        (Available: {{ book.available_copies }})
+                                    {% else %}
+                                        (⚠️ Awaiting Return)
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                {% if not is_return_mode %}
+                <div class="input-group-custom">
+                    <div class="input-box">
+                        <label>Expected Return Date</label>
+                        <input type="date" name="due_date" value="{{ default_due_date }}">
+                    </div>
+                </div>
+                {% endif %}
+
+               <div class="text-center mt-5">
+                    {% if is_return_mode %}
+                        <button type="submit" name="action" value="return" class="btn-action-main btn-return">
+                            <i class="ri-arrow-go-back-line"></i> Confirm Book Return
+                        </button>
+                    {% else %}
+                        <button type="submit" name="action" value="borrow" class="btn-action-main btn-issue">
+                            <i class="ri-send-plane-line"></i> Confirm Loan Issue
+                        </button>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn-cancel-exit">
+                            <i class="ri-close-circle-line me-1"></i> Cancel and exit
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
-    </main>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const panel = document.getElementById('profilePanel');
-        const toggleBtn = document.getElementById('profileToggle');
-        const closeBtn = document.getElementById('profileClose');
-        const overlay = document.getElementById('profileOverlay');
-
-        if (panel && toggleBtn) {
-            toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
-            [closeBtn, overlay].forEach(el => {
-                if (el) el.addEventListener('click', () => panel.classList.remove('open'));
-            });
-        }
-    });
-</script>
-</body>
-</html>
+    </div>
+</section>
+{% endblock %}
