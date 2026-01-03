@@ -63,12 +63,13 @@
                             <div class="d-flex align-items-center">
                                 <div class="me-3">
                                     {% if book.image_url %}
-                                        <img src="{{ MEDIA_URL }}{{ book.image_url }}" class="book-cover">
+                                        <img src="/media/{{ book.image_url }}" class="book-cover">
+                                        
                                     {% else %}
                                         <div class="book-cover bg-light d-flex align-items-center justify-content-center me-3 text-muted"><i class="ri-book-line fs-4"></i></div>
                                     {% endif %}
                                 </div>
-                                <div><div class="fw-bold text-dark">{{ book.title }}</div><small class="text-muted">#{{ book.id }}</small></div>
+                                <div><div class="fw-bold text-dark">{{ book.title }}</div></div>
                             </div>
                         </td>
                         <td class="d-none d-md-table-cell">{{ book.author }}</td>

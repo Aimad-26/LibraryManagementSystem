@@ -61,8 +61,7 @@ def staff_logout(request: HttpRequest):
 
 def dashboard(request: HttpRequest):
     # 🔹 Images used on both login & dashboard
-    bg_image = "book_covers/Background.jpg"
-    logo_image = "book_covers/ismac_logo.png"
+    
 
     staff_id = request.session.get('staff_id')
     if not staff_id:
@@ -92,8 +91,7 @@ def dashboard(request: HttpRequest):
         'total_available': total_available, # 👈 ajouté
         'total_borrowed': total_borrowed,   # 👈 ajouté
         'title': "Librarian Dashboard & Search",
-        'bg_image': bg_image,
-        'logo_image': logo_image,
+      
     }
     return render(request, 'client_app/dashboard.html', context)
 def edit_book_view(request, book_id):
@@ -187,7 +185,6 @@ def return_book_view(request):
     })
 def add_book(request: HttpRequest):
     staff_id = request.session.get('staff_id')
-    logo_image = "book_covers/ismac_logo.png"
 
     if not staff_id:
         request.session['login_message'] = "Authentication required."

@@ -216,7 +216,7 @@
                     <td class="ps-4">
                         <div class="d-flex align-items-center">
                             {% if book.image_url %}
-                                <img src="{{ MEDIA_URL }}{{ book.image_url }}" class="book-cover-mini me-3">
+                                <img src="/media/{{ book.image_url }}" class="book-cover-mini me-3">
                             {% else %}
                                 <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width:55px; height:75px; font-size: 1.5rem;">📖</div>
                             {% endif %}

@@ -56,7 +56,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 # Custom context processor for media URL visibility in all templates
-                'django.template.context_processors.media', 
+                 
+                'client_app.context_processors.global_images', # 👈 AJOUTEZ ÇA
             ],
         },
     },

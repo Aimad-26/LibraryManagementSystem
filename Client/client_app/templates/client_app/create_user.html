@@ -30,7 +30,7 @@
         /* Arrière-plan global */
         .bg-image {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('{{ MEDIA_URL }}{{ bg_image }}') center/cover no-repeat;
+            background:  url('/media/{{ bg_image }}') center/cover no-repeat;
             z-index: -2;
         }
 
@@ -197,6 +197,25 @@
             .form-wrapper { margin-left: 0; }
             body { overflow-y: auto; }
         }
+            .sidebar-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+}
+
+.logo-img-sidebar {
+    max-width: 140px;      /* Largeur maximale contrôlée */
+    width: 100%;           /* S'adapte au conteneur si celui-ci est plus petit */
+    height: auto;          /* Garde les proportions */
+    object-fit: contain;   /* Ne déforme jamais l'image */
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); /* Légère ombre pour le relief */
+    transition: transform 0.3s ease;
+}
+
+.logo-img-sidebar:hover {
+    transform: scale(1.03); /* Effet discret au survol */
+}
     </style>
 </head>
 <body>
@@ -214,9 +233,15 @@
 
             <div class="form-wrapper">
                 <header class="header-section">
-                    <div class="logo-container animate-fade" style="animation-delay: 0.2s;">
-                        <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo">
-                    </div>
+                      <div class="sidebar-logo p-4 text-center">
+                                <a href="{% url 'dashboard' %}" class="d-block">
+                                   {% if logo_image %}
+                                  <img src="/media/{{ logo_image }}" alt="Logo" class="logo-img-sidebar">
+                                   {% else %}
+                                  <img src="/media/book_covers/ismac_logo.png" alt="Logo" class="logo-img-sidebar">
+                                   {% endif %}
+                          </a>
+                      </div>
                     <h1 class="brand-name animate-fade" style="animation-delay: 0.3s;">REGISTER </h1>
                     <p class="page-subtitle animate-fade" style="animation-delay: 0.4s;">Create Librarian Account</p>
                 </header>
