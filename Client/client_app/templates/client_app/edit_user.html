@@ -1,173 +1,221 @@
-{% comment %} {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | Gestion Utilisateurs</title>
-    
-    <link rel="stylesheet" href="{% static 'css/edit_user.css' %}">
-    {% comment %} <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">  {% endcomment %}
-    
-    <style>
-        .form-section-title { margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #333; }
-        .form-field { margin-bottom: 15px; }
-        .form-field input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .message-container { padding: 15px; margin-bottom: 20px; border-radius: 5px; font-weight: bold; text-align: center; }
-        .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        /* L'alerte de sécurité n'est plus nécessaire car le champ est retiré */
-    </style>
-</head>
-{% comment %} <body>
-    <div class="login-container dashboard-container">
-        
-        <div class="header-controls" style="justify-content: space-between;">
-            <div class="header" style="text-align: left;">
-                <h2>✏️ Éditer l'Utilisateur: **{{ user_details.username }}**</h2>
-                <p>ID: {{ user_id }} | Statut: {{ user_details.is_active|yesno:"Actif, Désactivé" }}</p>
-            </div>
-            <a href="{% url 'users_list' %}" class="nav-button">
-                <i aria-hidden="true">👥</i> Retour à la liste
-            </a>
-        </div>
-
-        <hr>
-
-        {% if error_message %}
-            <div class="message-container error-message">{{ error_message }}</div>
-        {% elif success_message %}
-            <div class="message-container success-message">{{ success_message }}</div>
-        {% endif %}
-
-        <form method="post" action="{% url 'edit_user' user_id=user_id %}" class="edit-user-form"> 
-            {% csrf_token %}
-
-            <h3 class="form-section-title">Informations de Compte</h3>
-            
-            <div class="form-field">
-                <label for="id_username">Nom d'Utilisateur *</label>
-                <input type="text" id="id_username" name="username" value="{{ user_details.username }}" required>
-            </div>
-
-            <div class="form-field">
-                <label for="id_email">Email</label>
-                <input type="email" id="id_email" name="email" value="{{ user_details.email|default:'' }}">
-            </div>
-
-            <h3 class="form-section-title">Mise à Jour du Mot de Passe</h3>
-            <p>Remplissez le champ ci-dessous seulement si vous souhaitez changer le mot de passe de cet utilisateur.</p>
-            
-            <div class="form-field">
-                <label for="id_new_password">Nouveau Mot de Passe</label>
-                <input type="password" id="id_new_password" name="new_password">
-            </div>
-
-            <button type="submit" class="login-btn action-button-primary" style="width: 100%; margin-top: 25px;">
-                💾 Sauvegarder les Changements
-            </button>
-        </form>
-
-    </div>
-</body>
-</html> {% endcomment %} 
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | Gestion Utilisateurs</title>
-
+    <title>Modifier Staff | Librarian Dashboard</title>
+    
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+        
+        /* Style des boîtes de saisie normalisées */
+        .input-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 15px;
+            transition: 0.3s;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .input-box:focus-within {
+            border-color: #3f72af;
+            background: white;
+            box-shadow: 0 4px 12px rgba(63, 114, 175, 0.1);
+        }
+        .input-box label { 
+            display: block; 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            color: #64748b; 
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .input-box input { 
+            width: 100%; 
+            border: none; 
+            outline: none; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            color: #0f172a;
+            background: transparent;
+        }
 
-    <!-- NEW CSS file (create it in step 2) -->
-    <link rel="stylesheet" href="{% static 'css/edit_user.css' %}?v=1">
+        .btn-submit {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            width: 100%;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-submit:hover { 
+            background: #3f72af; 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(63, 114, 175, 0.2); 
+        }
+
+        .status-badge {
+            background: rgba(63, 114, 175, 0.1);
+            color: #3f72af;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
+<body class="dashboard-page">
 
-<body class="auth-page" style="--auth-bg: url('{% static 'images/auth-bg.webp' %}');">
-
-    <!-- Background overlay -->
-    <div class="auth-bg"></div>
-
-    <!-- “Modal” Card -->
-    <div class="auth-modal">
-
-        <!-- Close button (go back to list) -->
-        <a class="auth-close" href="{% url 'users_list' %}" aria-label="Close">×</a>
-
-        <!-- Logo / Title -->
-        <div class="auth-header">
-            <img class="auth-logo" src="{% static 'images/logo.png' %}" alt="Logo">
-            <h1 class="auth-title">Edit user</h1>
-            <p class="auth-subtitle">
-                ID: <strong>{{ user_id }}</strong> ·
-                Status: <strong>{{ user_details.is_active|yesno:"Active, Disabled" }}</strong>
-            </p>
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
         </div>
+        <nav class="sidebar-nav">
+            <p class="sidebar-section-label">LIBRARY</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+            <a href="{% url 'books_list' %}" class="sidebar-link">📚 Manage Books</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link active">📖 Users Staff</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link">👥 Members</a>
+            <p class="sidebar-section-label">ACCOUNT</p>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
+        </nav>
+    </aside>
 
-        {% if error_message %}
-            <div class="auth-alert auth-alert-error">{{ error_message }}</div>
-        {% elif success_message %}
-            <div class="auth-alert auth-alert-success">{{ success_message }}</div>
-        {% endif %}
-
-        <form method="post" action="{% url 'edit_user' user_id=user_id %}" class="edit-user-form">
-            {% csrf_token %}
-
-            <div class="auth-section">
-                <h3 class="auth-section-title">Account information</h3>
-
-                <div class="auth-field">
-                    <label for="id_username">Username *</label>
-                    <input type="text" id="id_username" name="username"
-                           value="{{ user_details.username }}" required>
+    <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+            <header class="topbar">
+                <div class="topbar-search">
+                    <span class="text-muted fw-light">Administration / <strong>Édition Utilisateur</strong></span>
                 </div>
-
-                <div class="auth-field">
-                    <label for="id_email">Email</label>
-                    <input type="email" id="id_email" name="email"
-                           value="{{ user_details.email|default:'' }}">
+                <div class="topbar-user">
+                    <span class="topbar-username">{{ username|default:"Admin" }}</span>
+                    <div class="topbar-avatar-btn">👤</div>
                 </div>
-            </div>
+            </header>
 
-            <div class="auth-section">
-                <h3 class="auth-section-title">Password update</h3>
-                <p class="auth-help">
-                    Fill this only if you want to change the user password.
-                </p>
-
-                <div class="auth-field auth-field-password">
-                    <label for="id_new_password">New password</label>
-                    <input type="password" id="id_new_password" name="new_password">
-
-                    <!-- show/hide password -->
-                    <button type="button" class="auth-eye" aria-label="Show password"
-                            onclick="togglePwd('id_new_password', this)">👁</button>
+            <section class="hero-banner">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">Account Editor</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <h1 class="hero-title">✏️ Éditer : {{ user_details.username }}</h1>
+                        <span class="status-badge">{{ user_details.is_active|yesno:"Compte Actif, Désactivé" }}</span>
+                    </div>
+                    <p class="hero-subtitle">Mise à jour de l'ID technique : #{{ user_id }}</p>
                 </div>
-            </div>
+                <div class="hero-actions">
+                    <a href="{% url 'users_list' %}" class="btn btn-outline-light rounded-pill px-4">
+                        <i class="ri-arrow-left-line me-1"></i> Liste du staff
+                    </a>
+                </div>
+            </section>
 
-            <button type="submit" class="auth-submit">
-                💾 Save changes
-            </button>
+            <section class="dashboard-section p-4">
+                <div class="row justify-content-center">
+                    <div class="col-xl-8">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                            
+                            {% if error_message %}
+                                <div class="alert alert-danger border-0 rounded-3 mb-4 shadow-sm">
+                                    <i class="ri-error-warning-line me-2"></i> {{ error_message }}
+                                </div>
+                            {% elif success_message %}
+                                <div class="alert alert-success border-0 rounded-3 mb-4 shadow-sm">
+                                    <i class="ri-checkbox-circle-line me-2"></i> {{ success_message }}
+                                </div>
+                            {% endif %}
 
-            <p class="auth-footer">
-                <a href="{% url 'users_list' %}">Back to users list</a>
-            </p>
-        </form>
+                            <form method="POST">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5 class="mb-4 text-dark fw-bold border-bottom pb-2">Informations de Compte</h5>
+                                    </div>
 
-    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-box">
+                                            <label>Nom d'utilisateur *</label>
+                                            <input type="text" name="username" value="{{ user_details.username }}" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="input-box">
+                                            <label>Email professionnel</label>
+                                            <input type="email" name="email" value="{{ user_details.email|default:'' }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12 mt-4">
+                                        <h5 class="mb-2 text-dark fw-bold border-bottom pb-2">Sécurité</h5>
+                                        <p class="text-muted small mb-4">Laissez vide pour conserver le mot de passe actuel.</p>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <div class="input-box">
+                                            <label>Nouveau mot de passe</label>
+                                            <input type="password" id="id_new_password" name="new_password" placeholder="••••••••">
+                                            <button type="button" class="password-toggle" onclick="togglePwd('id_new_password', this)">
+                                                <i class="ri-eye-line" id="eyeIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mt-4">
+                                        <button type="submit" class="btn-submit shadow">
+                                            <i class="ri-save-3-fill me-2"></i> Sauvegarder les modifications
+                                        </button>
+                                        <div class="text-center mt-3">
+                                            <a href="{% url 'users_list' %}" class="text-muted small text-decoration-none">
+                                                <i class="ri-close-line"></i> Annuler et retourner
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
 
 <script>
 function togglePwd(inputId, btn){
     const el = document.getElementById(inputId);
-    if(!el) return;
-    const isPwd = el.type === "password";
-    el.type = isPwd ? "text" : "password";
-    btn.textContent = isPwd ? "🙈" : "👁";
+    const icon = btn.querySelector('i');
+    if(el.type === "password"){
+        el.type = "text";
+        icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
+    } else {
+        el.type = "password";
+        icon.classList.replace('ri-eye-off-line', 'ri-eye-line');
+    }
 }
 </script>
 
