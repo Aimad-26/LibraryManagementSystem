@@ -2,3 +2,5 @@ server/venv/
 client/venv/
 __pycache__/
 *.pyc
+*.sqlite3
+db.sqlite3
