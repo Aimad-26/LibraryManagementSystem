@@ -1,15 +1,23 @@
 from django.db import models
+import uuid
 from django.contrib.auth.models import User
 
 class Member(models.Model):
-    
     full_name = models.CharField(max_length=200, verbose_name="Nom Complet")
     email = models.EmailField(unique=True, verbose_name="Adresse Email")
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Téléphone")
-    member_id = models.CharField(max_length=50, unique=True, verbose_name="ID Membre")
+    # On ajoute blank=True pour que Django accepte de ne pas le remplir dans les formulaires/gRPC
+    member_id = models.CharField(max_length=50, unique=True, blank=True, verbose_name="ID Membre")
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     max_loans = models.IntegerField(default=5, verbose_name="Nombre maximum de prêts")
+
+    def save(self, *args, **kwargs):
+        # Si le member_id est vide (chaîne vide ou None)
+        if not self.member_id:
+            # Génère un identifiant unique type MEM-XXXXXX
+            self.member_id = f"MEM-{uuid.uuid4().hex[:8].upper()}"
+        super(Member, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.full_name} ({self.member_id})"

@@ -279,36 +279,46 @@ def issue_book_view(request):
         'default_due_date': (timezone.now() + timedelta(days=14)).strftime('%Y-%m-%d')
     })
 def members_list(request):
-    """Affiche la liste complète des membres (clients)."""
+    """Affiche la liste complète des membres récupérée via gRPC."""
     if not request.session.get('staff_id'):
         return redirect('staff_login')
         
     client = LibraryClient()
-    # On récupère les membres via gRPC
-    members = client.get_all_members() 
+    
+    members_grpc = list(client.get_all_members()) 
     
     context = {
-        'members': members,
+        'members': members_grpc,
         'title': "Gestion des Membres",
-        'username_session': request.session.get('username'),
+        'username': request.session.get('username'), # Pour le panel de profil
+        'logo_image': "book_covers/ismac_logo.png",
     }
     return render(request, 'client_app/members.html', context)
 
 def add_member(request):
-    """Ajoute un nouveau client."""
+    """Ajoute un nouveau client et redirige vers la liste."""
     if not request.session.get('staff_id'):
         return redirect('staff_login')
 
     if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
         client = LibraryClient()
-        client.create_member(
-            full_name=request.POST.get('full_name'),
-            email=request.POST.get('email'),
-            phone=request.POST.get('phone')
-        )
-        return redirect('members_list')
+        response = client.create_member(full_name, email, phone)
+        
+        if response.success:
+            messages.success(request, f"Le membre {full_name} a été inscrit avec succès.")
+            # 🚀 CRITIQUE : Il faut rediriger pour que members_list soit rappelée
+            return redirect('members_list') 
+        else:
+            messages.error(request, f"Erreur : {response.message}")
     
-    return render(request, 'client_app/add_member.html', {'title': "Inscrire un Membre"})
+    return render(request, 'client_app/add_member.html', {
+        'title': "Inscrire un Membre",
+        'username': request.session.get('username')
+    })
 
 def edit_member(request, member_id):
     """Affiche le formulaire et sauvegarde les modifications."""
