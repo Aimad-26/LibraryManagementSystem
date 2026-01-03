@@ -8,265 +8,305 @@
     
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=5">
     
     <style>
-        body, html {
-    height: 100%;
-    margin: 0;
-    overflow: hidden; 
-}
+        .topbar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: #ffffff !important; 
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08); 
+            padding: 15px 30px;
+            border-bottom: 1px solid #edf2f7;
+        }
 
-/* Définit le conteneur principal sur toute la hauteur */
-.dashboard-layout {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-}
+        /* --- STRUCTURE DE BASE (CONSERVÉE) --- */
+        body, html { height: 100%; margin: 0; overflow: hidden; }
+        .dashboard-layout { display: flex; height: 100vh; width: 100vw; }
+        .dashboard-sidebar { height: 100vh; flex-shrink: 0; overflow-y: auto; transition: all 0.3s ease; z-index: 1100; }
+        .dashboard-main { flex-grow: 1; height: 100vh; overflow-y: auto; position: relative; }
 
-/* Menu gauche : Hauteur fixe et scroll interne si nécessaire */
-.dashboard-sidebar {
-    height: 100vh;
-    flex-shrink: 0;
-    overflow-y: auto;
-}
-
-/* Zone centrale : Active le scroll indépendant */
-.dashboard-main {
-    flex-grow: 1;
-    height: 100vh;
-    overflow-y: auto; 
-    position: relative;
-}
-
-/* Topbar : Reste collée en haut lors du défilement du main */
-.topbar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-        /* Modern Table & UI Enhancements */
+        /* --- STYLES TABLEAU & BADGES (CONSERVÉS) --- */
         .book-cover { width: 45px; height: 60px; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .available-stock { color: #10b981; font-weight: 700; }
         .unavailable-stock { color: #ef4444; font-weight: 700; }
-        
-        /* Status Badges */
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .bg-success-light { background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
         .bg-danger-light { background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
         .bg-warning-light { background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; }
-
-        /* Icon Styling */
-        .sidebar-link i { margin-right: 12px; font-size: 1.2rem; vertical-align: middle; transition: 0.3s; }
+        .sidebar-link i { margin-right: 12px; font-size: 1.2rem; vertical-align: middle; }
         .sidebar-link:hover i { transform: translateX(3px); color: #3f72af; }
-        
-        /* Responsive Table Wrapper */
         .table-wrapper { overflow-x: auto; border-radius: 12px; background: white; padding: 10px; }
 
-        /* Profile Sidebar (Right) Styling */
-        .profile-panel-body { width: 320px; padding: 0; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.05); }
-        .profile-panel-header { padding: 40px 24px; background: linear-gradient(135deg, #112d4e 0%, #3f72af 100%); color: white; position: relative; }
-        .profile-panel-close { color: white; top: 15px; right: 15px; font-size: 1.5rem; opacity: 0.7; }
-        .profile-panel-avatar { width: 70px; height: 70px; font-size: 2rem; background: rgba(255,255,255,0.2); border: 2px solid white; margin-bottom: 15px; }
-        .profile-panel-item { padding: 18px 24px; border-bottom: 1px solid #f1f5f9; transition: 0.2s; }
-        .profile-panel-item:hover { background: #f8fafc; color: #3f72af; }
+        /* --- MISE À JOUR : PANEL PROFIL DROITE (PRO & OVER TOPBAR) --- */
+        .profile-panel { z-index: 2000 !important; } /* Passe au-dessus de la topbar */
+        
+        .profile-panel-body { 
+            width: 340px; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            background: #ffffff; /* Fond blanc sans zone bleue */
+            box-shadow: -15px 0 45px rgba(0,0,0,0.1); 
+        }
+
+        .profile-panel-header { 
+            padding: 60px 24px 30px; 
+            background: #ffffff; 
+            position: relative; 
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .profile-panel-close { 
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #64748b; 
+            font-size: 1.8rem; 
+            border: none;
+            background: none;
+            transition: 0.2s;
+        }
+        .profile-panel-close:hover { color: #112d4e; transform: rotate(90deg); }
+
+        .profile-panel-avatar { 
+            width: 110px; 
+            height: 110px; 
+            font-size: 3.5rem; 
+            background: #f8fafc; 
+            color: #3f72af;
+            border: 2px solid #e2e8f0; 
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .profile-panel-name { color: #112d4e; font-size: 1.25rem; }
+        .profile-panel-handle { color: #64748b; }
+
+        .profile-panel-menu { flex-grow: 1; overflow-y: auto; padding: 20px 15px; }
+
+        .profile-panel-item { 
+            width: 100%; padding: 14px 20px; margin-bottom: 8px; border-radius: 12px;
+            border: none; background: transparent; display: flex; align-items: center; gap: 15px;
+            color: #4b5563; font-weight: 600; transition: 0.2s; text-decoration: none;
+        }
+        .profile-panel-item:hover { background: #f3f4f6; color: #3f72af; }
+        .profile-panel-item i { font-size: 1.3rem; }
+
+        .profile-panel-footer { padding: 20px; border-top: 1px solid #f1f5f9; background: #f8fafc; }
+        
+        .logout-btn-pro { 
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; 
+            padding: 14px; background: #fee2e2; color: #b91c1c; border-radius: 12px; 
+            font-weight: 700; text-decoration: none; transition: 0.3s; 
+        }
+        .logout-btn-pro:hover { background: #ef4444; color: white; }
+
+        /* --- LOGIQUE MOBILE (CONSERVÉE) --- */
+        #mobileMenuBtn { display: none; background: none; border: none; font-size: 1.5rem; color: #112d4e; cursor: pointer; }
+
+        @media (max-width: 992px) {
+            #mobileMenuBtn { display: block; margin-right: 15px; }
+            .dashboard-sidebar { position: fixed; left: -280px; }
+            .dashboard-sidebar.open { left: 0; }
+            .dashboard-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; }
+            .dashboard-sidebar-overlay.active { display: block; }
+            .profile-panel-body { width: 100%; max-width: 320px; }
+        }
     </style>
 </head>
 <body class="dashboard-page">
+
+<div class="dashboard-sidebar-overlay" id="sidebarOverlay"></div>
 
 <div class="profile-panel" id="profilePanel">
     <div class="profile-panel-overlay" id="profileOverlay"></div>
     <aside class="profile-panel-body">
         <div class="profile-panel-header">
             <button type="button" class="profile-panel-close" id="profileClose"><i class="ri-close-line"></i></button>
-            <div class="profile-panel-user">
-                <div class="profile-panel-avatar">👤</div>
-                <div>
-                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
-                    <p class="profile-panel-handle" style="opacity: 0.8;">@{{ username|lower|default:"librarian" }}</p>
-                </div>
+            <div class="profile-panel-avatar">
+                <i class="ri-user-3-fill"></i>
             </div>
-            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn" style="color: white; border-color: white;">Edit Profile</a>
+            <div class="profile-panel-info">
+                <p class="profile-panel-name h5 mb-0 fw-bold">{{ username|default:"Librarian" }}</p>
+                <p class="profile-panel-handle small">@{{ username|lower|default:"librarian" }}</p>
+            </div>
         </div>
+        
         <nav class="profile-panel-menu">
             <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
-                <i class="ri-user-settings-line me-2"></i> <span>My Settings</span>
-                <span class="profile-panel-arrow"><i class="ri-arrow-right-s-line"></i></span>
+                <i class="ri-user-settings-line"></i> 
+                <span>My Settings</span>
+                <i class="ri-arrow-right-s-line ms-auto"></i>
             </button>
-            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
-                <i class="ri-logout-box-r-line me-2"></i> <span>Log out</span>
-                <span class="profile-panel-arrow"><i class="ri-arrow-right-s-line"></i></span>
+            <button type="button" class="profile-panel-item" onclick="window.location.href='#'">
+                <i class="ri-history-line"></i> 
+                <span>Activity Logs</span>
+                <i class="ri-arrow-right-s-line ms-auto"></i>
             </button>
         </nav>
+
+        <div class="profile-panel-footer">
+            <a href="{% url 'staff_logout' %}" class="logout-btn-pro">
+                <i class="ri-logout-box-r-line"></i>
+                <span>Sign Out</span>
+            </a>
+        </div>
     </aside>
 </div>
 
 <div class="dashboard-layout">
-    <aside class="dashboard-sidebar">
-        <div class="sidebar-logo">
+    <aside class="dashboard-sidebar shadow" id="mainSidebar">
+        <div class="sidebar-logo p-4">
             <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
         </div>
         <nav class="sidebar-nav">
-            <p class="sidebar-section-label">MAIN NAVIGATION</p>
-            <a href="{% url 'dashboard' %}" class="sidebar-link active">
-                <i class="ri-dashboard-3-line"></i> Dashboard
+            <p class="sidebar-section-label px-4 small text-uppercase opacity-50 text-white">MAIN NAVIGATION</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link active d-flex align-items-center px-4 py-3 text-white text-decoration-none">
+                <i class="ri-dashboard-3-line"></i> <span>Dashboard</span>
             </a>
-            <a href="{% url 'add_book' %}" class="sidebar-link">
-                <i class="ri-add-circle-line"></i> Add New Book
+            <a href="{% url 'add_book' %}" class="sidebar-link d-flex align-items-center px-4 py-3 text-white text-decoration-none opacity-75">
+                <i class="ri-add-circle-line"></i> <span>Add New Book</span>
             </a>
-            <a href="{% url 'books_list' %}" class="sidebar-link">
-                <i class="ri-book-read-line"></i> Manage Books
+            <a href="{% url 'books_list' %}" class="sidebar-link d-flex align-items-center px-4 py-3 text-white text-decoration-none opacity-75">
+                <i class="ri-book-read-line"></i> <span>Manage Books</span>
             </a>
-            <a href="{% url 'issue_book' %}" class="sidebar-link">
-                <i class="ri-arrow-left-right-line"></i> Issue a Book
+            <a href="{% url 'issue_book' %}" class="sidebar-link d-flex align-items-center px-4 py-3 text-white text-decoration-none opacity-75">
+                <i class="ri-arrow-left-right-line"></i> <span>Issue a Book</span>
             </a>
             
-            <p class="sidebar-section-label">DIRECTORY</p>
-            <a href="{% url 'users_list' %}" class="sidebar-link">
-                <i class="ri-user-star-line"></i> Staff Users
+            <p class="sidebar-section-label px-4 mt-4 small text-uppercase opacity-50 text-white">DIRECTORY</p>
+            <a href="{% url 'users_list' %}" class="sidebar-link d-flex align-items-center px-4 py-3 text-white text-decoration-none opacity-75">
+                <i class="ri-user-star-line"></i> <span>Staff Users</span>
             </a>
-            <a href="{% url 'members_list' %}" class="sidebar-link">
-                <i class="ri-group-line"></i> Library Members
+            <a href="{% url 'members_list' %}" class="sidebar-link d-flex align-items-center px-4 py-3 text-white text-decoration-none opacity-75">
+                <i class="ri-group-line"></i> <span>Library Members</span>
             </a>
 
-            <p class="sidebar-section-label">SYSTEM</p>
-            <a href="{% url 'staff_profile' %}" class="sidebar-link">
-                <i class="ri-settings-4-line"></i> Profile Settings
+            <p class="sidebar-section-label px-4 mt-4 small text-uppercase opacity-50 text-white">SYSTEM</p>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link d-flex align-items-center px-4 py-3 text-white text-decoration-none opacity-75">
+                <i class="ri-settings-4-line"></i> <span>Profile Settings</span>
             </a>
         </nav>
     </aside>
 
     <main class="dashboard-main">
         <div class="dashboard-main-inner">
-            <header class="topbar">
-                <div class="topbar-search">
-                    <span class="text-muted fw-light">System / <strong>Overview</strong></span>
-                </div>
-                <div class="topbar-user">
-                    <div class="text-end me-3 d-none d-md-block">
-                        <span class="topbar-username d-block">{{ username|default:"Librarian" }}</span>
-                        <small class="text-muted fs-xs">Active Session</small>
+            <header class="topbar d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <button id="mobileMenuBtn" class="btn btn-link d-lg-none text-dark p-0 me-3">
+                        <i class="ri-menu-2-line fs-3"></i>
+                    </button>
+                    <div class="d-flex flex-column">
+                        <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 0.65rem;">System</span>
+                        <span class="fw-bold" style="color: #112d4e; margin-top: -4px;">Overview</span>
                     </div>
-                    <button type="button" class="topbar-avatar-btn" id="profileToggle">
-                        <i class="ri-user-line"></i>
+                </div>
+
+                <div class="topbar-user d-flex align-items-center">
+                    <div class="text-end me-3 d-none d-md-block">
+                        <span class="topbar-username d-block fw-bold" style="color: #112d4e; font-size: 0.9rem;">
+                            {{ username|default:"Librarian" }}
+                        </span>
+                        <div class="d-flex align-items-center justify-content-end">
+                            <span class="badge bg-success-subtle text-success border-0 p-0 me-1" style="font-size: 0.5rem;">●</span>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem;">Active Session</small>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="topbar-avatar-btn shadow-sm" id="profileToggle" 
+                            style="background: #3f72af; color: white; width: 40px; height: 40px; border: 3px solid #eef2ff;">
+                        <i class="ri-user-settings-fill"></i>
                     </button>
                 </div>
             </header>
 
-            <section class="hero-banner">
+            <section class="hero-banner p-4 p-md-5 rounded-4 m-4 text-white shadow-sm" style="background: linear-gradient(135deg, #3f72af 0%, #112d4e 100%);">
                 <div class="hero-text-block">
-                    <p class="hero-eyebrow">Inventory Management</p>
-                    <h1 class="hero-title">Welcome back, {{ username }}!</h1>
-                    <p class="hero-subtitle">You have <strong>{{ total_borrowed }}</strong> books currently out on loan.</p>
+                    <p class="hero-eyebrow text-uppercase fw-bold opacity-75">Inventory Management</p>
+                    <h1 class="hero-title display-5 fw-bold">Welcome back, {{ username }}!</h1>
+                    <p class="hero-subtitle lead">You have <strong>{{ total_borrowed }}</strong> books currently out on loan.</p>
                 </div>
             </section>
 
-            <section class="summary-row">
-                <article class="summary-card shadow-sm border-0">
+            <section class="summary-row px-4 d-flex flex-wrap gap-4 mb-4">
+                <article class="summary-card shadow-sm border-0 bg-white p-4 rounded-4 flex-fill">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3>Available</h3>
-                            <p class="summary-number" style="color: #10b981;">{{ total_available|default:"0" }}</p>
-                        </div>
+                        <div><h3>Available</h3><p class="summary-number mb-0" style="color: #10b981;">{{ total_available|default:"0" }}</p></div>
                         <i class="ri-bookmark-3-line fs-1 opacity-25"></i>
                     </div>
                 </article>
-                <article class="summary-card shadow-sm border-0">
+                <article class="summary-card shadow-sm border-0 bg-white p-4 rounded-4 flex-fill">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3>Borrowed</h3>
-                            <p class="summary-number" style="color: #ef4444;">{{ total_borrowed|default:"0" }}</p>
-                        </div>
+                        <div><h3>Borrowed</h3><p class="summary-number mb-0" style="color: #ef4444;">{{ total_borrowed|default:"0" }}</p></div>
                         <i class="ri-arrow-left-right-fill fs-1 opacity-25"></i>
                     </div>
                 </article>
-                <article class="summary-card shadow-sm border-0">
+                <article class="summary-card shadow-sm border-0 bg-white p-4 rounded-4 flex-fill">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3>Total Titles</h3>
-                            <p class="summary-number" style="color: #3f72af;">{{ book_results|length|default:"0" }}</p>
-                        </div>
+                        <div><h3>Total Titles</h3><p class="summary-number mb-0" style="color: #3f72af;">{{ book_results|length|default:"0" }}</p></div>
                         <i class="ri-book-open-line fs-1 opacity-25"></i>
                     </div>
                 </article>
             </section>
 
-            <section class="dashboard-section">
+            <section class="dashboard-section px-4 pb-5">
                 <div class="section-header d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="section-title"><i class="ri-search-eye-line me-2"></i>Quick Inventory Search</h2>
+                    <h2 class="section-title fw-bold"><i class="ri-search-eye-line me-2"></i>Quick Inventory Search</h2>
                 </div>
-                <form method="get" action="{% url 'dashboard' %}" class="search-area shadow-sm rounded-4">
-                    <i class="ri-search-2-line ms-3 text-muted"></i>
-                    <input type="text" name="q" placeholder="Search Title, Author, or ISBN..." value="{{ query|default:'' }}" class="border-0">
-                    <button type="submit" class="login-btn search-btn px-4">Search</button>
+                <form method="get" action="{% url 'dashboard' %}" class="search-area shadow-sm rounded-4 bg-white border d-flex overflow-hidden mb-4">
+                    <i class="ri-search-2-line m-3 text-muted"></i>
+                    <input type="text" name="q" placeholder="Search Title, Author, or ISBN..." value="{{ query|default:'' }}" class="border-0 flex-grow-1 p-3">
+                    <button type="submit" class="login-btn search-btn px-4 border-0">Search</button>
                 </form>
-            </section>
 
-            <section class="dashboard-section">
                 {% if book_results %}
                 <div class="table-wrapper shadow-sm border">
                     <table class="table align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th class="border-0">Book Details</th>
-                                <th class="border-0">Author</th>
-                                <th class="border-0">Status</th>
-                                <th class="border-0">Stock</th>
-                                <th class="border-0 text-end">Action</th>
+                                <th class="ps-4">Book Details</th>
+                                <th class="d-none d-md-table-cell">Author</th>
+                                <th>Status</th>
+                                <th class="d-none d-sm-table-cell">Stock</th>
+                                <th class="text-end pe-4">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for book in book_results %}
                             <tr>
-                                <td>
+                                <td class="ps-4">
                                     <div class="d-flex align-items-center">
                                         <div class="me-3">
                                             {% if book.image_url %}
                                                 <img src="{{ MEDIA_URL }}{{ book.image_url }}" class="book-cover">
                                             {% else %}
-                                                <div class="book-cover d-flex align-items-center justify-content-center bg-light text-muted">
-                                                    <i class="ri-book-line fs-4"></i>
-                                                </div>
+                                                <div class="book-cover bg-light d-flex align-items-center justify-content-center me-3 text-muted"><i class="ri-book-line fs-4"></i></div>
                                             {% endif %}
                                         </div>
-                                        <div>
-                                            <div class="fw-bold text-dark">{{ book.title }}</div>
-                                            <small class="text-muted">ID: #{{ book.id }}</small>
-                                        </div>
+                                        <div><div class="fw-bold text-dark">{{ book.title }}</div><small class="text-muted">#{{ book.id }}</small></div>
                                     </div>
                                 </td>
-                                <td>{{ book.author }}</td>
+                                <td class="d-none d-md-table-cell">{{ book.author }}</td>
                                 <td>
                                     {% if book.available_copies == 0 %}
-                                        <span class="status-badge bg-danger-light">Out of Stock</span>
-                                    {% elif book.available_copies < book.total_copies %}
-                                        <span class="status-badge bg-warning-light">Partial</span>
+                                        <span class="status-badge bg-danger-light text-danger">Out of Stock</span>
                                     {% else %}
-                                        <span class="status-badge bg-success-light">Available</span>
+                                        <span class="status-badge bg-success-light text-success">Available</span>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <span class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
-                                        {{ book.available_copies }} <span class="text-muted fw-normal">/ {{ book.total_copies }}</span>
-                                    </span>
-                                </td>
-                                <td class="text-end">
-                                    {% if book.available_copies > 0 %}
-                                        <a href="{% url 'issue_book' %}?book_id={{ book.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
-                                            <i class="ri-download-line"></i> Borrow
-                                        </a>
-                                    {% else %}
-                                        <a href="{% url 'issue_book' %}?book_id={{ book.id }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
-                                            <i class="ri-upload-line"></i> Return
-                                        </a>
-                                    {% endif %}
+                                <td class="d-none d-sm-table-cell fw-bold">{{ book.available_copies }} / {{ book.total_copies }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'issue_book' %}?book_id={{ book.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="ri-arrow-right-line"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -274,10 +314,7 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
-                    <i class="ri-search-line fs-1 text-muted opacity-25"></i>
-                    <p class="text-muted mt-2">No results matching your criteria.</p>
-                </div>
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm border"><i class="ri-search-line fs-1 text-muted opacity-25"></i><p class="text-muted mt-2">No matching records found.</p></div>
                 {% endif %}
             </section>
         </div>
@@ -290,11 +327,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleBtn = document.getElementById('profileToggle');
     const closeBtn = document.getElementById('profileClose');
     const overlay = document.getElementById('profileOverlay');
+    const mainSidebar = document.getElementById('mainSidebar');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
 
     if (panel && toggleBtn) {
         toggleBtn.addEventListener('click', () => panel.classList.add('open'));
         [closeBtn, overlay].forEach(el => {
             if (el) el.addEventListener('click', () => panel.classList.remove('open'));
+        });
+    }
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mainSidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+        });
+        sidebarOverlay.addEventListener('click', () => {
+            mainSidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
         });
     }
 });
