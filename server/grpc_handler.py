@@ -43,3 +43,57 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
             response.success = False
             response.message = "Invalid username or account is inactive."
         return response
+    # --- B. Inventory Management ---
+    def CreateBook(self, request, context):
+        try:
+            total_qty = request.total_copies if request.total_copies > 0 else 1
+            new_book = Book.objects.create(
+                title=request.title,
+                author=request.author,
+                isbn=request.isbn,
+                total_copies=total_qty,
+                available_copies=total_qty, 
+                image=request.image_url if request.image_url else None
+            )
+            return library_pb2.StatusResponse(success=True, message=f"Book created.", entity_id=new_book.id)
+        except IntegrityError:
+            return library_pb2.StatusResponse(success=False, message="ISBN already exists.")
+        except Exception as e:
+            return library_pb2.StatusResponse(success=False, message=str(e))
+
+    def UpdateBookAvailability(self, request, context):
+        try:
+            book = Book.objects.get(id=request.id)
+            book.title = request.title
+            book.author = request.author
+            book.isbn = request.isbn
+            book.total_copies = request.total_copies
+            book.available_copies = request.available_copies
+            book.save()
+            return library_pb2.StatusResponse(success=True, message="Livre mis à jour.")
+        except Book.DoesNotExist:
+            return library_pb2.StatusResponse(success=False, message="Livre introuvable.")
+        except Exception as e:
+            return library_pb2.StatusResponse(success=False, message=str(e))
+
+    def DeleteBook(self, request, context):
+        try:
+            book_id = int(request.query)
+            book = Book.objects.get(id=book_id)
+            book.delete()
+            return library_pb2.StatusResponse(success=True, message="Livre supprimé avec succès.")
+        except Exception as e:
+            return library_pb2.StatusResponse(success=False, message=str(e))
+
+    def GetBook(self, request, context):
+        try:
+            book = Book.objects.get(id=int(request.query))
+            return library_pb2.Book(
+                id=book.id, title=book.title, author=book.author,
+                isbn=book.isbn, total_copies=book.total_copies,
+                available_copies=book.available_copies,
+                image_url=str(book.image) if book.image else ""
+            )
+        except Exception:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return library_pb2.Book()
