@@ -187,6 +187,7 @@ def return_book_view(request):
     })
 def add_book(request: HttpRequest):
     staff_id = request.session.get('staff_id')
+    logo_image = "book_covers/ismac_logo.png"
 
     if not staff_id:
         request.session['login_message'] = "Authentication required."

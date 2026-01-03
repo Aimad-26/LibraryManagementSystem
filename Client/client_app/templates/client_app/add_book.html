@@ -1,196 +1,248 @@
+{% extends "layout.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajouter un Livre | Dashboard</title>
+
+{% block title %}Ajouter un Livre | Librarian Dashboard{% endblock %}
+
+{% block nav_add %}active opacity-100{% endblock %}
+{% block breadcrumb_parent %}Inventory{% endblock %}
+{% block breadcrumb_active %}New Book{% endblock %}
+
+{% block content %}
+<style>
+    /* --- SECTION HEADER / HERO (Signature visuelle) --- */
+    .hero-banner {
+        background: linear-gradient(135deg, #3f72af 0%, #112d4e 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 35px 45px;
+        margin: 20px;
+        box-shadow: 0 10px 25px rgba(17, 45, 78, 0.15);
+        position: relative;
+    }
+
+    .hero-eyebrow {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        opacity: 0.7;
+        margin-bottom: 5px;
+    }
+
+    .hero-title {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* --- LIEN "VOIR LA LISTE" (Positionné à droite) --- */
+    .btn-view-list {
+        position: absolute;
+        top: 40px;
+        right: 45px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid transparent;
+    }
+
+    .btn-view-list:hover {
+        color: #ffffff;
+        border-bottom: 1px solid #ffffff;
+    }
+
+    /* --- FORM CARD PRINCIPALE --- */
+    .form-container-card {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        padding: 40px;
+        margin: 0 20px 40px 20px;
+    }
+
+    /* --- INPUT BOX (DESIGN CAPTURE) --- */
+    .input-group-custom {
+        margin-bottom: 18px;
+    }
+
+    .input-box {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px 20px;
+        transition: all 0.2s ease;
+    }
+
+    .input-box:focus-within {
+        border-color: #3f72af;
+        box-shadow: 0 0 0 3px rgba(63, 114, 175, 0.1);
+    }
+
+    .input-box label {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+        letter-spacing: 0.5px;
+        text-align: left;
+    }
+
+    .input-box input {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #111827;
+        background: transparent;
+        padding: 0;
+    }
+
+    /* --- ZONE UPLOAD (POINTILLÉS) --- */
+    .upload-zone {
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 22px;
+        margin-top: 10px;
+        background: #ffffff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: 0.2s;
+    }
+
+    .upload-zone:hover {
+        background: #f9fafb;
+        border-color: #3f72af;
+    }
+
+    /* --- BOUTON NOIR PLEINE LARGEUR --- */
+    .btn-save-black {
+        background: #111827;
+        color: #ffffff !important;
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        margin-top: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+
+    .btn-save-black:hover {
+        background: #1f2937;
+    }
+</style>
+
+<section class="hero-banner shadow-sm">
+    <div class="hero-text-block text-start">
+        <p class="hero-eyebrow">Inventory Management</p>
+        <h1 class="hero-title">
+            <span style="font-size: 2rem;">📚</span> Ajouter un Nouveau Livre
+        </h1>
+        <p class="hero-subtitle lead mb-0 opacity-90" style="font-size: 1rem;">
+            Remplissez les informations ci-dessous pour mettre à jour le catalogue central.
+        </p>
+    </div>
     
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
-    <style>
-        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
-        
-        /* Adaptation des Input Boxes pour fond blanc */
-        .input-box {
-            background: #f8fafc; /* Gris très léger au lieu du blanc pur */
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 10px 15px;
-            transition: 0.3s;
-            margin-bottom: 1rem;
-        }
-        .input-box:focus-within {
-            border-color: #3f72af; /* Bleu ISMAC */
-            background: white;
-            box-shadow: 0 4px 12px rgba(63, 114, 175, 0.08);
-        }
-        .input-box label { 
-            display: block; 
-            font-size: 0.65rem; 
-            font-weight: 800; 
-            color: #64748b; 
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-        .input-box input { 
-            width: 100%; 
-            border: none; 
-            outline: none; 
-            font-weight: 600; 
-            font-size: 0.95rem; 
-            color: #0f172a;
-            background: transparent;
-        }
+    <a href="{% url 'books_list' %}" class="btn-view-list">
+        Voir la liste
+    </a>
+</section>
 
-        .compact-upload {
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .compact-upload:hover { border-color: #3f72af; background: #f0f7ff; }
+<section class="row justify-content-center">
+    <div class="col-xl-11">
+        <div class="form-container-card">
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} rounded-3 border-0 shadow-sm mb-4 text-start small">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
 
-        .btn-submit {
-            background: #0f172a;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            width: 100%;
-            transition: 0.3s;
-        }
-        .btn-submit:hover { background: #3f72af; transform: translateY(-2px); shadow: 0 10px 15px rgba(0,0,0,0.1); }
-    </style>
-</head>
-<body class="dashboard-page">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
 
-<div class="dashboard-layout">
-    <aside class="dashboard-sidebar">
-        <div class="sidebar-logo">
-            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
-        </div>
-        <nav class="sidebar-nav">
-            <p class="sidebar-section-label">LIBRARY</p>
-            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
-            <a href="{% url 'add_book' %}" class="sidebar-link active">Add New Book</a>
-            <a href="{% url 'books_list' %}" class="sidebar-link">📚 Manage Books</a>
-            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users</a>
-            <a href="{% url 'members_list' %}" class="sidebar-link">📖 Members</a>
-            <p class="sidebar-section-label">ACCOUNT</p>
-            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
-        </nav>
-    </aside>
-
-    <main class="dashboard-main">
-        <div class="dashboard-main-inner">
-            <header class="topbar">
-                <div class="topbar-search">
-                    <span class="text-muted fw-light">Inventory / <strong>New Book</strong></span>
-                </div>
-                <div class="topbar-user">
-                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
-                    <div class="topbar-avatar-btn">👤</div>
-                </div>
-            </header>
-
-            <section class="hero-banner">
-                <div class="hero-text-block">
-                    <p class="hero-eyebrow">Inventory Management</p>
-                    <h1 class="hero-title">📚 Ajouter un Nouveau Livre</h1>
-                    <p class="hero-subtitle">Remplissez les informations ci-dessous pour mettre à jour le catalogue central.</p>
-                </div>
-                <div class="hero-actions">
-                    <a href="{% url 'books_list' %}" class="btn btn-outline-light rounded-pill px-4">Voir la liste</a>
-                </div>
-            </section>
-
-            <section class="dashboard-section p-4">
-                <div class="row justify-content-center">
-                    <div class="col-xl-10">
-                        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
-                            
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-{{ message.tags }} rounded-3 border-0">{{ message }}</div>
-                                {% endfor %}
-                            {% endif %}
-
-                            <form method="post" enctype="multipart/form-data">
-                                {% csrf_token %}
-
-                                <div class="row g-3">
-                                    <div class="col-md-8">
-                                        <div class="input-box">
-                                            <label>Titre Officiel de l'ouvrage *</label>
-                                            <input type="text" name="title" placeholder="ex: Le Petit Prince" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="input-box">
-                                            <label>Code ISBN-13 *</label>
-                                            <input type="text" name="isbn" placeholder="978-XXXXXXXXXX" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <div class="input-box">
-                                            <label>Auteur / Contributeur *</label>
-                                            <input type="text" name="author" placeholder="Antoine de Saint-Exupéry" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <div class="input-box">
-                                            <label>Quantité *</label>
-                                            <input type="number" name="copies" min="1" value="1" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="compact-upload" onclick="document.getElementById('id_image').click()">
-                                            <i class="ri-image-add-line fs-3 text-primary"></i>
-                                            <div class="text-start">
-                                                <p class="m-0 small fw-bold text-dark">Image de Couverture</p>
-                                                <span class="text-muted" style="font-size: 0.7rem;">Cliquer pour uploader (JPG/PNG)</span>
-                                            </div>
-                                            <input type="file" id="id_image" name="image" accept="image/*" hidden>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 mt-4 text-center">
-                                        <button type="submit" class="btn-submit">
-                                            <i class="ri-save-3-line me-2"></i> ENREGISTRER DANS L'INVENTAIRE
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                <div class="row">
+                    <div class="col-12 input-group-custom">
+                        <div class="input-box">
+                            <label>Titre Officiel de l'ouvrage *</label>
+                            <input type="text" name="title" placeholder="ex: Le Petit Prince" required>
                         </div>
                     </div>
+
+                    <div class="col-12 input-group-custom">
+                        <div class="input-box">
+                            <label>Code ISBN-13 *</label>
+                            <input type="text" name="isbn" placeholder="978-XXXXXXXXXX" required>
+                        </div>
+                    </div>
+
+                    <div class="col-12 input-group-custom">
+                        <div class="input-box">
+                            <label>Auteur / Contributeur *</label>
+                            <input type="text" name="author" placeholder="Antoine de Saint-Exupéry" required>
+                        </div>
+                    </div>
+
+                    <div class="col-12 input-group-custom">
+                        <div class="input-box">
+                            <label>Quantité *</label>
+                            <input type="number" name="copies" min="1" value="1" required>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="upload-zone" onclick="document.getElementById('id_image').click()">
+                            <i class="ri-image-line fs-3 text-secondary"></i>
+                            <div class="text-start">
+                                <p class="m-0 fw-bold text-dark" id="fileName" style="font-size: 0.95rem;">Image de Couverture</p>
+                                <span class="text-muted" style="font-size: 0.75rem;">Cliquer pour uploader (JPG/PNG)</span>
+                            </div>
+                            <input type="file" id="id_image" name="image" accept="image/*" hidden>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn-save-black">
+                            <i class="ri-save-3-line"></i> Enregistrer dans l'inventaire
+                        </button>
+                    </div>
                 </div>
-            </section>
+            </form>
         </div>
-    </main>
-</div>
+    </div>
+</section>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    // Feedback visuel pour l'upload d'image
-    document.getElementById('id_image').addEventListener('change', function(e) {
-        if(this.files && this.files[0]) {
-            const name = this.files[0].name;
-            document.querySelector('.compact-upload p').innerText = "Fichier : " + name;
-            document.querySelector('.compact-upload p').classList.add('text-primary');
-            document.querySelector('.compact-upload').style.borderColor = "#3f72af";
-        }
-    });
+    const fileInput = document.getElementById('id_image');
+    if(fileInput) {
+        fileInput.addEventListener('change', function() {
+            if(this.files && this.files[0]) {
+                const name = this.files[0].name;
+                document.getElementById('fileName').innerText = "Sélectionné : " + name;
+                document.getElementById('fileName').style.color = "#3f72af";
+            }
+        });
+    }
 </script>
-
-</body>
-</html>
+{% endblock %}
