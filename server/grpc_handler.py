@@ -55,6 +55,7 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
             response.success = False
             response.message = "Invalid username or account is inactive."
         return response
+
     # --- B. Inventory Management ---
     def CreateBook(self, request, context):
         try:
@@ -109,7 +110,8 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
         except Exception:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return library_pb2.Book()
-# --- C. Search ---
+
+    # --- C. Search ---
     def SearchBooks(self, request, context):
         query = request.query
         books = Book.objects.filter(Q(title__icontains=query) | Q(author__icontains=query)).order_by('title')
@@ -261,8 +263,8 @@ class LibraryServicer(library_pb2_grpc.LibraryServiceServicer):
             response.success = False
             response.message = str(e)
         return response
-    
-    # ----------------------------------------------------
+
+# ----------------------------------------------------
 # 4. Server Initialization
 # ----------------------------------------------------
 
