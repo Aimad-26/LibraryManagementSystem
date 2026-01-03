@@ -1,114 +1,3 @@
-
-<!-- {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Librarian Dashboard | Inventory</title>
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <style>
-        /* ADDED: Minimal style for book cover consistency */
-        .book-cover {
-            width: 40px; /* Small size for the table row */
-            height: auto;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        /* Style classes for status based on quantity */
-        .available-stock { color: green; font-weight: bold; }
-        .unavailable-stock { color: red; }
-    </style>
-</head> 
-<body>
-    <div class="login-container dashboard-container">
-        
-        <div class="header-controls">
-            <div class="header" style="text-align: left;">
-                <h1>📚 Librarian Dashboard</h1>
-                <p>Inventory Management and Loan Processing</p>
-            </div>
-            
-            <div class="user-controls">
-                <a href="{% url 'staff_profile' %}" class="nav-button profile-btn">
-                    <i aria-hidden="true">⚙️</i> Profile
-                </a>
-                
-                <a href="{% url 'staff_logout' %}" class="nav-button logout-btn">
-                    <i aria-hidden="true">🚪</i> Log Out
-                </a>
-            </div>
-        </div>
-
-        <hr>
-        
-        <div class="action-buttons">
-            <a href="{% url 'add_book' %}" class="action-button-primary">
-                <i aria-hidden="true">➕</i> Add New Book
-            </a>
-        </div>
-
-        <h2>Search Inventory</h2>
-        
-        <form method="get" action="{% url 'dashboard' %}" class="search-area">
-            <input type="text" name="q" 
-                    placeholder="Search Title, Author, or ISBN..." 
-                    value="{{ query|default:'' }}">
-            <button type="submit" class="login-btn" style="width: 150px;">🔍 Search</button>
-        </form>
-        
-        {% if book_results %}
-            <h3>Found {{ book_results|length }} Books:</h3>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th> 
-                        <th>Image</th> <th>Title</th>
-                        <th>Author</th>
-                        <th>ISBN</th>
-                        <th>Total Stock</th> <th>Available</th> <th>Actions</th> </tr>
-                </thead>
-                <tbody>
-                    {% for book in book_results %}
-                    <tr>
-                        <td>{{ book.id }}</td>
-
-                        <td>
-                            {% if book.image_url %}
-                            <img src="{{ MEDIA_URL }}{{ book.image_url }}" alt="{{ book.title }} Coverr" class="book-cover">
-                            {% else %}
-                            <i aria-hidden="true">🖼️</i>
-                            {% endif %}
-                        </td>
-                        
-                        <td>{{ book.title }}</td>
-                        <td>{{ book.author }}</td>
-                        <td>{{ book.isbn }}</td>
-                        
-                        <td>{{ book.total_copies }}</td> <td class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
-                            {{ book.available_copies }}
-                        </td>
-
-                        <td>
-                            {% if book.available_copies > 0 %}
-                            <a href="" class="action-link available-stock">Borrow</a>
-                            {% else %}
-                            <a href="{% url 'return_book' %}?book_id={{ book.id }}" class="action-link unavailable-stock">Return</a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p style="text-align: center;">No results found for query "{{ query }}".</p>
-        {% endif %}
-
-    </div>
-</body>
-</html> -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -119,225 +8,133 @@
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
     <style>
-        /* Extra table styles that were inlined before */
         .book-cover {
             width: 40px;
             height: auto;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .available-stock { color: green; font-weight: bold; }
-        .unavailable-stock { color: red; }
+        .available-stock { color: #28a745; font-weight: bold; }
+        .unavailable-stock { color: #dc3545; font-weight: bold; }
+        
+        /* Badges styles */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .bg-success-light { background-color: #d4edda; color: #155724; }
+        .bg-danger-light { background-color: #f8d7da; color: #721c24; }
+        .bg-warning-light { background-color: #fff3cd; color: #856404; }
     </style>
 </head>
 <body class="dashboard-page">
 
-<!-- ================= PROFILE SIDE PANEL ================= -->
 <div class="profile-panel" id="profilePanel">
-    <!-- dark overlay -->
     <div class="profile-panel-overlay" id="profileOverlay"></div>
-
-    <!-- sliding card -->
     <aside class="profile-panel-body">
         <div class="profile-panel-header">
             <button type="button" class="profile-panel-close" id="profileClose">×</button>
-
             <div class="profile-panel-user">
                 <div class="profile-panel-avatar">👤</div>
                 <div>
-                    <p class="profile-panel-name">
-                        {{ username|default:"Librarian" }}
-                    </p>
-                    <p class="profile-panel-handle">
-                        @{{ username|default:"librarian" }}
-                    </p>
+                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
+                    <p class="profile-panel-handle">@{{ username|default:"librarian" }}</p>
                 </div>
             </div>
-
-            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">
-                Edit Profile
-            </a>
+            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">Edit Profile</a>
         </div>
-
         <nav class="profile-panel-menu">
-            <button type="button"
-                    class="profile-panel-item"
-                    onclick="window.location.href='{% url 'staff_profile' %}'">
+            <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
                 <span>Profile</span>
                 <span class="profile-panel-arrow">›</span>
             </button>
-
-            <button type="button"
-                    class="profile-panel-item profile-panel-item-danger"
-                    onclick="window.location.href='{% url 'staff_logout' %}'">
+            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
                 <span>Log out</span>
                 <span class="profile-panel-arrow">›</span>
             </button>
         </nav>
     </aside>
 </div>
-<!-- ===================================================== -->
 
 <div class="dashboard-layout">
-
-    <!-- ========== LEFT SIDEBAR ========== -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-     <img src="{{ MEDIA_URL }}{{ logo_image }}" 
-         alt="ISMAC Logo"
-         class="logo-img">
-</div>
-
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
+        </div>
         <nav class="sidebar-nav">
             <p class="sidebar-section-label">LIBRARY</p>
-
-            <a href="{% url 'dashboard' %}" class="sidebar-link active">
-                Dashboard
-            </a>
-
-            <a href="{% url 'add_book' %}" class="sidebar-link">
-                Add New Book
-            </a>
-
-            <a href="#" class="sidebar-link">
-                Borrowed Books
-            </a>
-            <a href="{% url 'users_list' %}" class="sidebar-link">
-                📖 Users
-            </a>
-            <a href="{% url 'clients_list' %}" class="sidebar-link">
-                👥 Clients
-            </a>
-          <a href="{% url 'loan_list' %}" class="sidebar-link">
-                📚 Emprunts
-            </a>
-
-
-            
-            <!-- <a href="#" class="sidebar-link">
-                {% comment %}  Returns {% endcomment %}
-            </a> -->
-
+            <a href="{% url 'dashboard' %}" class="sidebar-link active">Dashboard</a>
+            <a href="{% url 'add_book' %}" class="sidebar-link">Add New Book</a>
+            <a href="{% url 'books_list' %}" class="sidebar-link">Manage Books </a>
+            <a href="{% url 'issue_book' %}" class="sidebar-link">🚀 Issue a Book</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link">📖 Members</a>
             <p class="sidebar-section-label">ACCOUNT</p>
-
-            <a href="{% url 'staff_profile' %}" class="sidebar-link">
-                👤 My Profile
-            </a>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
         </nav>
     </aside>
 
-    <!-- ========== MAIN AREA ========== -->
     <main class="dashboard-main">
         <div class="dashboard-main-inner">
-
-            <!-- TOP BAR -->
             <header class="topbar">
-                <div class="topbar-search">
-                    <input type="text" placeholder="Search in dashboard...">
-                </div>
-
+                <div class="topbar-search"></div>
                 <div class="topbar-user">
                     <span class="topbar-username">{{ username|default:"Librarian" }}</span>
-                    <!-- button that opens the side panel -->
-                    <button type="button"
-                            class="topbar-avatar-btn"
-                            id="profileToggle">
-                        👤
-                    </button>
+                    <button type="button" class="topbar-avatar-btn" id="profileToggle">👤</button>
                 </div>
             </header>
 
-            <!-- HERO BANNER -->
             <section class="hero-banner">
                 <div class="hero-text-block">
-                    <p class="hero-eyebrow">Dashboard</p>
+                    <p class="hero-eyebrow">Inventory Management</p>
                     <h1 class="hero-title">👋 Bonjour, {{ username|default:"Librarian" }} !</h1>
-                    <p class="hero-subtitle">
-                        Welcome to your library space. Manage books, track loans, and keep your catalog organized.
-                    </p>
-                </div>
-
-                <div class="hero-actions">
-                    <!-- keep your existing Profile / Log Out buttons if you like 
-                    <div class="hero-user-controls">
-                        <a href="{% url 'staff_profile' %}" class="nav-button profile-btn">
-                            ⚙️ Profile
-                        </a>
-                        <a href="{% url 'staff_logout' %}" class="nav-button logout-btn">
-                            🚪 Log Out
-                        </a>
-                    </div>-->
+                    <p class="hero-subtitle">Manage your collection and track active loans in real-time.</p>
                 </div>
             </section>
 
-            <!-- SUMMARY CARDS -->
             <section class="summary-row">
                 <article class="summary-card">
-                    <h3>Books in Catalog</h3>
-                    <p class="summary-number">
-                        {{ book_results|length|default:"0" }}
-                    </p>
-                    <p class="summary-caption">
-                        Total books found in current search.
-                    </p>
+                    <h3>Available Copies</h3>
+                    <p class="summary-number" style="color: #28a745;">{{ total_available|default:"0" }}</p>
+                    <p class="summary-caption">Copies ready on shelves.</p>
                 </article>
-
                 <article class="summary-card">
-                    <h3>Available Now</h3>
-                    <p class="summary-number">
-                        {{ book_results|length|default:"0" }}
-                    </p>
-                    <p class="summary-caption">
-                        Copies currently available (visual placeholder).
-                    </p>
+                    <h3>Borrowed Books</h3>
+                    <p class="summary-number" style="color: #dc3545;">{{ total_borrowed|default:"0" }}</p>
+                    <p class="summary-caption">Books currently with members.</p>
                 </article>
-
                 <article class="summary-card">
-                    <h3>Notifications</h3>
-                    <p class="summary-number">0</p>
-                    <p class="summary-caption">
-                        No notifications for now.
-                    </p>
+                    <h3>Unique Titles</h3>
+                    <p class="summary-number">{{ book_results|length|default:"0" }}</p>
+                    <p class="summary-caption">Distinct titles in catalog.</p>
                 </article>
             </section>
 
-            <!-- SEARCH SECTION -->
             <section class="dashboard-section">
                 <div class="section-header">
                     <h2 class="section-title">Search Inventory</h2>
                 </div>
-
-                <form method="get"
-                      action="{% url 'dashboard' %}"
-                      class="search-area">
-                    <input type="text"
-                           name="q"
-                           placeholder="Search Title, Author, or ISBN..."
-                           value="{{ query|default:'' }}">
-                    <button type="submit" class="login-btn search-btn">
-                        🔍 Search
-                    </button>
+                <form method="get" action="{% url 'dashboard' %}" class="search-area">
+                    <input type="text" name="q" placeholder="Search Title, Author, or ISBN..." value="{{ query|default:'' }}">
+                    <button type="submit" class="login-btn search-btn">🔍 Search</button>
                 </form>
             </section>
 
-            <!-- RESULTS TABLE -->
             <section class="dashboard-section">
                 {% if book_results %}
-                    <h3 class="section-subtitle">
-                        Found {{ book_results|length }} Books:
-                    </h3>
-
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Image</th>
+                                    <th>Cover</th>
                                     <th>Title</th>
                                     <th>Author</th>
-                                    <th>ISBN</th>
-                                    <th>Total Stock</th>
-                                    <th>Available</th>
+                                    <th>Status</th>
+                                    <th>Stock</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -347,31 +144,43 @@
                                     <td>{{ book.id }}</td>
                                     <td>
                                         {% if book.image_url %}
-                                            <img src="{{ MEDIA_URL }}{{ book.image_url }}"
-                                                 alt="{{ book.title }} Cover"
-                                                 class="book-cover">
+                                            <img src="{{ MEDIA_URL }}{{ book.image_url }}" class="book-cover">
                                         {% else %}
-                                            🖼️
+                                            <span style="font-size: 1.2rem;">📖</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ book.title }}</td>
+                                    <td><strong>{{ book.title }}</strong></td>
                                     <td>{{ book.author }}</td>
-                                    <td>{{ book.isbn }}</td>
-                                    <td>{{ book.total_copies }}</td>
-                                    <td class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
-                                        {{ book.available_copies }}
+                                    <td>
+                                        {% if book.available_copies == 0 %}
+                                            <span class="status-badge bg-danger-light text-danger">Borrowed</span>
+                                        {% elif book.available_copies < book.total_copies %}
+                                            <span class="status-badge bg-warning-light text-warning">Partial</span>
+                                        {% else %}
+                                            <span class="status-badge bg-success-light text-success">Available</span>
+                                        {% endif %}
                                     </td>
                                     <td>
-                                        {% if book.available_copies > 0 %}
-                                            <a href="#" class="action-link available-stock">
-                                                Borrow
-                                            </a>
-                                        {% else %}
-                                            <a href="{% url 'return_book' %}?book_id={{ book.id }}"
-                                               class="action-link unavailable-stock">
-                                                Return
-                                            </a>
-                                        {% endif %}
+                                        <span class="{% if book.available_copies > 0 %}available-stock{% else %}unavailable-stock{% endif %}">
+                                            {{ book.available_copies }} / {{ book.total_copies }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 10px;">
+                                            {% if book.available_copies > 0 %}
+                                                <a href="{% url 'issue_book' %}?book_id={{ book.id }}" 
+                                                   class="action-link" 
+                                                   style="color: #0d6efd; text-decoration: none; font-weight: bold;">
+                                                    📥 Borrow
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'issue_book' %}?book_id={{ book.id }}" 
+                                                   class="action-link" 
+                                                   style="color: #dc3545; text-decoration: none; font-weight: bold;">
+                                                    📤 Return
+                                                </a>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -379,36 +188,26 @@
                         </table>
                     </div>
                 {% else %}
-                    <p class="no-results">
-                        No results found for query "{{ query }}".
-                    </p>
+                    <p class="no-results">No books found for "{{ query }}".</p>
                 {% endif %}
             </section>
-
         </div>
     </main>
 </div>
 
-<!-- =============== JS: open / close side panel =============== -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const panel     = document.getElementById('profilePanel');
+    const panel = document.getElementById('profilePanel');
     const toggleBtn = document.getElementById('profileToggle');
-    const closeBtn  = document.getElementById('profileClose');
-    const overlay   = document.getElementById('profileOverlay');
+    const closeBtn = document.getElementById('profileClose');
+    const overlay = document.getElementById('profileOverlay');
 
-    if (!panel || !toggleBtn) return;
-
-    function openPanel()  { panel.classList.add('open'); }
-    function closePanel() { panel.classList.remove('open'); }
-
-    toggleBtn.addEventListener('click', function () {
-        panel.classList.toggle('open');
-    });
-
-    [closeBtn, overlay].forEach(function (el) {
-        if (el) { el.addEventListener('click', closePanel); }
-    });
+    if (panel && toggleBtn) {
+        toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+        [closeBtn, overlay].forEach(el => {
+            if (el) el.addEventListener('click', () => panel.classList.remove('open'));
+        });
+    }
 });
 </script>
 </body>

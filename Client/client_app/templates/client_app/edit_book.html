@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier Livre | Librarian Dashboard</title>
+    
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+        
+        /* Style des boîtes de saisie normalisées */
+        .input-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 15px;
+            transition: 0.3s;
+            margin-bottom: 1rem;
+        }
+        .input-box:focus-within {
+            border-color: #4e73df; /* Bleu Edition */
+            background: white;
+            box-shadow: 0 4px 12px rgba(78, 115, 223, 0.1);
+        }
+        .input-box label { 
+            display: block; 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            color: #64748b; 
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .input-box input { 
+            width: 100%; 
+            border: none; 
+            outline: none; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            color: #0f172a;
+            background: transparent;
+        }
+
+        .btn-submit {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            width: 100%;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-submit:hover { 
+            background: #4e73df; 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(78, 115, 223, 0.2); 
+        }
+
+        .btn-cancel {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .btn-cancel:hover { color: #0f172a; }
+    </style>
+</head>
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
+        </div>
+        <nav class="sidebar-nav">
+            <p class="sidebar-section-label">MANAGEMENT</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+            <a href="{% url 'books_list' %}" class="sidebar-link active">📚 Manage Books</a>
+            <a href="{% url 'add_book' %}" class="sidebar-link">+ New Book</a>
+            <p class="sidebar-section-label">DIRECTORY</p>
+            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users Staff</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link">👥 Members</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+            <header class="topbar">
+                <div class="topbar-search">
+                    <span class="text-muted fw-light">Catalogue / <strong>Édition</strong></span>
+                </div>
+                <div class="topbar-user">
+                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
+                    <div class="topbar-avatar-btn">👤</div>
+                </div>
+            </header>
+
+            <section class="hero-banner" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">Inventory Editor</p>
+                    <h1 class="hero-title">📝 Modifier : {{ book.title }}</h1>
+                    <p class="hero-subtitle">Identifiant technique : #{{ book.id }} — Mettez à jour les informations dans la base gRPC.</p>
+                </div>
+                <div class="hero-actions">
+                    <a href="{% url 'books_list' %}" class="btn btn-outline-light rounded-pill px-4">Retour au catalogue</a>
+                </div>
+            </section>
+
+            <section class="dashboard-section p-4">
+                <div class="row justify-content-center">
+                    <div class="col-xl-10">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                            
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} rounded-3 border-0 shadow-sm">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <form method="POST">
+                                {% csrf_token %}
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-8">
+                                        <div class="input-box">
+                                            <label>Titre de l'ouvrage</label>
+                                            <input type="text" name="title" value="{{ book.title }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-box">
+                                            <label>Code ISBN-13</label>
+                                            <input type="text" name="isbn" value="{{ book.isbn }}" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="input-box">
+                                            <label>Auteur Principal</label>
+                                            <input type="text" name="author" value="{{ book.author }}" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="input-box">
+                                            <label class="text-primary">Stock Total (Copies)</label>
+                                            <input type="number" name="total_copies" value="{{ book.total_copies }}" min="1" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="input-box">
+                                            <label class="text-success">Disponibles en rayon</label>
+                                            <input type="number" name="available_copies" value="{{ book.available_copies }}" min="0" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mt-4">
+                                        <button type="submit" class="btn-submit shadow-sm">
+                                            <i class="ri-checkbox-circle-line me-2"></i> Enregistrer les modifications
+                                        </button>
+                                        <div class="text-center mt-3">
+                                            <a href="{% url 'books_list' %}" class="btn-cancel">Annuler la modification</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

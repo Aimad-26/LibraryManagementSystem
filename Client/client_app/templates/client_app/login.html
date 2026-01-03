@@ -1,123 +1,269 @@
 {% load static %}
 <!DOCTYPE html>
-<!-- <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Librarian Login | Book System</title>
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-</head>
-<body>
-    <div class="login-container">
-        <div class="header">
-            <h1>Library Management System</h1>
-            <p>Librarian Access Portal</p>
-        </div>
-
-        {% if message %}
-            <div class="error-message">{{ message }}</div>
-        {% endif %}
-
-        <form method="post" action="{% url 'staff_login' %}">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter staff username" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter password" required>
-            </div>
-            
-            <button type="submit" class="login-btn">Log In</button>
-            
-            <p style="margin-top: 20px; font-size: 0.8em; color: var(--secondary-color);">
-                Use the Superuser account created on the server.
-            </p>
-        </form>
-    </div>
-</body>
-</html> -->
-{% load static %}
-<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library System Application Platform</title>
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
-</head>
-<body style="background: url('{{ MEDIA_URL }}{{ bg_image }}') center/cover no-repeat fixed;">
-
-    <div class="page-wrapper">
-        <div class="login-container">
-            <div class="header">
-
-                <!-- Logo from /Client/media/book_covers/ismac_logo.png -->
-                <div class="logo-area">
-    <img src="{{ MEDIA_URL }}{{ logo_image }}" 
-         alt="ISMAC Logo"
-         class="logo-img">
+    <title>Berry's Library | Login</title>
     
-</div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
-                <h2 class="page-title">Library System Application Platform</h2>
-                <p class="page-subtitle">Access your Library account</p>
+    <style>
+        :root {
+            --primary-color: #ff4757; /* Couleur corail/rouge proche de votre image */
+            --dark-overlay: rgba(15, 23, 42, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Arrière-plan global (Image de bibliothèque) */
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('{{ MEDIA_URL }}{{ bg_image }}') center/cover no-repeat;
+            z-index: -2;
+        }
+
+        /* Overlay sombre */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-overlay);
+            z-index: -1;
+        }
+
+        /* La structure de séparation oblique */
+        .split-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* Zone gauche (Libre pour l'image) */
+        .visual-side {
+            flex: 1;
+            display: none; /* Masqué sur mobile */
+        }
+
+        /* Zone droite (Le formulaire avec la droite oblique) */
+        .form-side {
+            flex: 1;
+            background: var(--glass-bg);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            /* Création de l'effet oblique */
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+            animation: slideInRight 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Carte de formulaire */
+        .form-content {
+            width: 100%;
+            max-width: 400px;
+            margin-left: 10%; /* Ajustement pour compenser l'oblique */
+        }
+
+        /* Styles Typographiques */
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .login-title {
+            font-size: 1.2rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+            font-weight: 600;
+        }
+
+        /* Inputs Modernes */
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group-custom {
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .input-group-custom:focus-within {
+            border-bottom-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .form-control-custom {
+            border: none;
+            background: transparent;
+            padding: 0.8rem 0;
+            width: 100%;
+            outline: none;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+
+        /* Bouton Login */
+        .btn-login {
+           background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(243, 103, 114, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
+
+        }
+
+        /* Liens */
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .forgot-password:hover {
+            opacity: 0.7;
+        }
+
+        .signup-text {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .signup-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Animations */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .visual-side { display: block; }
+        }
+
+        @media (max-width: 991px) {
+            .form-side {
+                clip-path: none;
+                flex: 1;
+            }
+            .form-content { margin-left: 0; }
+        }
+         .logo-container { 
+            height: 70px; 
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 10px;
+        }
+        .logo-container img { 
+            max-height: 100%; max-width: 180px;
+            object-fit: contain; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image"></div>
+    <div class="overlay"></div>
+
+    <div class="split-container">
+        <div class="visual-side"></div>
+
+        <div class="form-side shadow-lg">
+            <div class="form-content">
+                
+                <header class="text-center mb-5">
+                    
+                    <div class="logo-container animate-fade" style="animation-delay: 0.2s;">
+                        <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo">
+                    </div>
+                
+                    <h1 class="brand-name animate-fade" style="animation-delay: 0.3s;">DLMS</h1>
+                    <div class="login-title animate-fade" style="animation-delay: 0.5s;">Login Form</div>
+                </header>
+
+                {% if message %}
+                <div class="alert alert-danger border-0 rounded-4 small py-2 animate-fade" style="animation-delay: 0.6s;">
+                    <i class="ri-error-warning-line me-2"></i> {{ message }}
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'staff_login' %}" class="animate-fade" style="animation-delay: 0.7s;">
+                    {% csrf_token %}
+                    
+                    <div class="input-group-custom">
+                        <label class="form-label" for="username">Email / Username</label>
+                        <input type="text" id="username" name="username" class="form-control-custom" placeholder="votre@email.com" required>
+                    </div>
+
+                    <div class="input-group-custom">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" id="password" name="password" class="form-control-custom" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <a href="#" class="forgot-password">Forgot Password?</a>
+                        <button type="submit" class="btn-login">Login</button>
+                    </div>
+
+                    <div class="text-center signup-text">
+                        Don't have an account? <a href="{% url 'create_user' %}" class="signup-link">Click Here</a>
+                    </div>
+                </form>
+
             </div>
-
-            {% if message %}
-                <div class="error-message">{{ message }}</div>
-            {% endif %}
-
-            <!-- ⚠️ SAME form structure -->
-            <form method="post" action="{% url 'staff_login' %}">
-                {% csrf_token %}
-
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username"
-                           placeholder="Username" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password"
-                           placeholder="Enter your password" required>
-                </div>
-
-                <div class="form-row">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="show-password">
-                        <span>Show password</span>
-                    </label>
-                    <a href="#" class="forgot-link">Forgot your password?</a>
-                </div>
-
-                <button type="submit" class="login-btn primary-btn">Log in</button>
-                <br>
-                <a href="{% url 'create_user' %}" class="login-btn secondary-btn" style="text-align: center; display: block; margin-top: 15px;">
-                   Create your Library account
-                </a>
-
-                <p class="footer-text">
-                    Developed by <a href="#" class="footer-link">ADIA</a>
-                </p>
-            </form>
         </div>
     </div>
 
-    <script>
-        const showPasswordCheckbox = document.getElementById('show-password');
-        const passwordInput = document.getElementById('password');
-
-        if (showPasswordCheckbox && passwordInput) {
-            showPasswordCheckbox.addEventListener('change', () => {
-                passwordInput.type = showPasswordCheckbox.checked ? 'text' : 'password';
-            });
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

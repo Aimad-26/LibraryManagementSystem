@@ -16,20 +16,13 @@ urlpatterns = [
     path('users/', views.users_list, name='users_list'),
     path('users/edit/<int:user_id>/', views.edit_user, name='edit_user'),
     path('users/delete/<int:user_id>/', views.delete_user_action, name='delete_user_action'),
-    # Gestion des Clients (CRUD complet gRPC)
-    path('clients/', views.client_list, name='clients_list'),
-    path('clients/add/', views.create_client, name='create_client'),
-    path('clients/edit/<int:client_id>/', views.edit_client, name='edit_client'),
-    path('clients/delete/<int:client_id>/', views.delete_client_action, name='delete_client_action'),
-    ###commendes#####
-    # ----------------- Loans / Emprunts -----------------
-    path('loans/', views.loan_list, name='loan_list'),
-    path('loans/create/', views.loan_create, name='loan_create'),
-    path('loans/<int:loan_id>/', views.loan_detail, name='loan_detail'),
-    path('loans/<int:loan_id>/return/', views.loan_return, name='loan_return'),
-
-    # ----------------- APIs AJAX -----------------
-    path('loans/api/stats/', views.loan_stats_api, name='loan_stats_api'),
-    path('loans/api/clients/search/', views.search_clients_api, name='search_clients_api'),
-    path('loans/api/books/available/', views.available_books_api, name='available_books_api'),
+    path('members/', views.members_list, name='members_list'),
+    path('members/add/', views.add_member, name='add_member'),
+    path('members/delete/<int:member_id>/', views.delete_member_action, name='delete_member'),
+    path('members/edit/<int:member_id>/', views.edit_member, name='edit_member'),
+    path('members/issue-book/', views.issue_book_view, name='issue_book'),
+    path('members/return-book/', views.return_book_view, name='return_book'),
+    path('manage-books/', views.books_list, name='books_list'),
+path('delete-book/<int:book_id>/', views.delete_book, name='delete_book'),
+path('edit-book/<int:book_id>/', views.edit_book_view, name='edit_book'),
 ]

@@ -1,7 +1,26 @@
 from django.db import models
+import uuid
 from django.contrib.auth.models import User
 
+class Member(models.Model):
+    full_name = models.CharField(max_length=200, verbose_name="Nom Complet")
+    email = models.EmailField(unique=True, verbose_name="Adresse Email")
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Téléphone")
+    # On ajoute blank=True pour que Django accepte de ne pas le remplir dans les formulaires/gRPC
+    member_id = models.CharField(max_length=50, unique=True, blank=True, verbose_name="ID Membre")
+    date_joined = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    max_loans = models.IntegerField(default=5, verbose_name="Nombre maximum de prêts")
 
+    def save(self, *args, **kwargs):
+        # Si le member_id est vide (chaîne vide ou None)
+        if not self.member_id:
+            # Génère un identifiant unique type MEM-XXXXXX
+            self.member_id = f"MEM-{uuid.uuid4().hex[:8].upper()}"
+        super(Member, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.member_id})"
 
 class Book(models.Model):
     title = models.CharField(max_length=200, help_text="Title of the book.")
@@ -26,21 +45,20 @@ class LibraryUser(models.Model):
 
     def __str__(self):
         return f"Patron: {self.user.username} ({self.member_id})"
+
 class Loan(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    patron = models.ForeignKey(LibraryUser, on_delete=models.CASCADE)
-    loan_date = models.DateField(auto_now_add=True)
-    due_date = models.DateField()
-    returned_date = models.DateField(null=True, blank=True)
+   book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    # Ajoutez null=True, blank=True temporairement
+   member = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
+   loan_date = models.DateField(auto_now_add=True)
+   due_date = models.DateField()
+   returned_date = models.DateField(null=True, blank=True)
 
-    def __str__(self):
-        return f"Loan of {self.book.title} to {self.patron.user.username}"
-class Client(models.Model):
-    nom = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    telephone = models.CharField(max_length=20)
-    adresse = models.TextField()
-    date_inscription = models.DateTimeField(auto_now_add=True)
+   def save(self, *args, **kwargs):
+        # Définit automatiquement une date de retour à +14 jours si non spécifiée
+        if not self.due_date:
+            self.due_date = timezone.now().date() + timedelta(days=14)
+        super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.nom   
+   def __str__(self):
+        return f"Loan: {self.book.title} -> {self.member.full_name}"

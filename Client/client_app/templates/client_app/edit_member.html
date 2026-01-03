@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modifier Staff | Librarian Dashboard</title>
+    <title>Modifier Membre | Librarian Dashboard</title>
     
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
@@ -22,7 +22,6 @@
             padding: 10px 15px;
             transition: 0.3s;
             margin-bottom: 1rem;
-            position: relative;
         }
         .input-box:focus-within {
             border-color: #3f72af;
@@ -65,25 +64,13 @@
             box-shadow: 0 10px 20px rgba(63, 114, 175, 0.2); 
         }
 
-        .status-badge {
+        .member-badge {
             background: rgba(63, 114, 175, 0.1);
             color: #3f72af;
             padding: 4px 12px;
             border-radius: 8px;
             font-weight: 800;
             font-size: 0.75rem;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 1.2rem;
         }
     </style>
 </head>
@@ -98,8 +85,8 @@
             <p class="sidebar-section-label">LIBRARY</p>
             <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
             <a href="{% url 'books_list' %}" class="sidebar-link">📚 Manage Books</a>
-            <a href="{% url 'users_list' %}" class="sidebar-link active">📖 Users Staff</a>
-            <a href="{% url 'members_list' %}" class="sidebar-link">👥 Members</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users Staff</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link active">👥 Members (Clients)</a>
             <p class="sidebar-section-label">ACCOUNT</p>
             <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
         </nav>
@@ -109,26 +96,26 @@
         <div class="dashboard-main-inner">
             <header class="topbar">
                 <div class="topbar-search">
-                    <span class="text-muted fw-light">Administration / <strong>Édition Utilisateur</strong></span>
+                    <span class="text-muted fw-light">Annuaire / <strong>Édition Membre</strong></span>
                 </div>
                 <div class="topbar-user">
-                    <span class="topbar-username">{{ username|default:"Admin" }}</span>
+                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
                     <div class="topbar-avatar-btn">👤</div>
                 </div>
             </header>
 
             <section class="hero-banner">
                 <div class="hero-text-block">
-                    <p class="hero-eyebrow">Account Editor</p>
+                    <p class="hero-eyebrow">Member Management</p>
                     <div class="d-flex align-items-center gap-3">
-                        <h1 class="hero-title">✏️ Éditer : {{ user_details.username }}</h1>
-                        <span class="status-badge">{{ user_details.is_active|yesno:"Compte Actif, Désactivé" }}</span>
+                        <h1 class="hero-title">✏️ Éditer : {{ member.full_name }}</h1>
+                        <span class="member-badge">ID: #{{ member.id }}</span>
                     </div>
-                    <p class="hero-subtitle">Mise à jour de l'ID technique : #{{ user_id }}</p>
+                    <p class="hero-subtitle">Mettez à jour les coordonnées du client dans la base de données.</p>
                 </div>
                 <div class="hero-actions">
-                    <a href="{% url 'users_list' %}" class="btn btn-outline-light rounded-pill px-4">
-                        <i class="ri-arrow-left-line me-1"></i> Liste du staff
+                    <a href="{% url 'members_list' %}" class="btn btn-outline-light rounded-pill px-4">
+                        <i class="ri-arrow-left-line me-1"></i> Retour à la liste
                     </a>
                 </div>
             </section>
@@ -138,14 +125,10 @@
                     <div class="col-xl-8">
                         <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
                             
-                            {% if error_message %}
-                                <div class="alert alert-danger border-0 rounded-3 mb-4 shadow-sm">
-                                    <i class="ri-error-warning-line me-2"></i> {{ error_message }}
-                                </div>
-                            {% elif success_message %}
-                                <div class="alert alert-success border-0 rounded-3 mb-4 shadow-sm">
-                                    <i class="ri-checkbox-circle-line me-2"></i> {{ success_message }}
-                                </div>
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} rounded-3 border-0 shadow-sm">{{ message }}</div>
+                                {% endfor %}
                             {% endif %}
 
                             <form method="POST">
@@ -153,45 +136,37 @@
                                 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <h5 class="mb-4 text-dark fw-bold border-bottom pb-2">Informations de Compte</h5>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="input-box">
-                                            <label>Nom d'utilisateur *</label>
-                                            <input type="text" name="username" value="{{ user_details.username }}" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="input-box">
-                                            <label>Email professionnel</label>
-                                            <input type="email" name="email" value="{{ user_details.email|default:'' }}">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-12 mt-4">
-                                        <h5 class="mb-2 text-dark fw-bold border-bottom pb-2">Sécurité</h5>
-                                        <p class="text-muted small mb-4">Laissez vide pour conserver le mot de passe actuel.</p>
+                                        <h5 class="mb-4 text-dark fw-bold">Informations Personnelles</h5>
                                     </div>
 
                                     <div class="col-md-12">
                                         <div class="input-box">
-                                            <label>Nouveau mot de passe</label>
-                                            <input type="password" id="id_new_password" name="new_password" placeholder="••••••••">
-                                            <button type="button" class="password-toggle" onclick="togglePwd('id_new_password', this)">
-                                                <i class="ri-eye-line" id="eyeIcon"></i>
-                                            </button>
+                                            <label>Nom et Prénom *</label>
+                                            <input type="text" name="full_name" value="{{ member.full_name }}" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="input-box">
+                                            <label>Adresse de messagerie *</label>
+                                            <input type="email" name="email" value="{{ member.email }}" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="input-box">
+                                            <label>Téléphone</label>
+                                            <input type="text" name="phone" value="{{ member.phone|default:'' }}" placeholder="+212 6 XX XX XX XX">
                                         </div>
                                     </div>
 
                                     <div class="col-12 mt-4">
                                         <button type="submit" class="btn-submit shadow">
-                                            <i class="ri-save-3-fill me-2"></i> Sauvegarder les modifications
+                                            <i class="ri-save-line me-2"></i> Sauvegarder les Changements
                                         </button>
                                         <div class="text-center mt-3">
-                                            <a href="{% url 'users_list' %}" class="text-muted small text-decoration-none">
-                                                <i class="ri-close-line"></i> Annuler et retourner
+                                            <a href="{% url 'members_list' %}" class="text-muted small text-decoration-none">
+                                                Annuler et retourner à la liste
                                             </a>
                                         </div>
                                     </div>
@@ -204,20 +179,6 @@
         </div>
     </main>
 </div>
-
-<script>
-function togglePwd(inputId, btn){
-    const el = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if(el.type === "password"){
-        el.type = "text";
-        icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
-    } else {
-        el.type = "password";
-        icon.classList.replace('ri-eye-off-line', 'ri-eye-line');
-    }
-}
-</script>
 
 </body>
 </html>

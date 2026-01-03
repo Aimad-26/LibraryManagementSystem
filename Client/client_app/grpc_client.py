@@ -3,9 +3,6 @@
 import grpc
 import sys
 import os
-####commendes###
-from datetime import datetime
-
 
 # ----------------------------------------------------
 # 1. PYTHON PATH FIX (CRITICAL for Django Client)
@@ -122,8 +119,19 @@ class LibraryClient:
                 success=False, 
                 message=f"RPC Failed ({status_code.name}): {details}"
             )
-            
-    # D2. Creation Wrapper (Uses update_staff_profile for detournement)
+    def delete_member(self, m_id):
+        return self.stub.DeleteMember(library_pb2.UserIdRequest(user_id=str(m_id)))
+    def update_member(self, m_id, name, email, phone):
+        req = library_pb2.Member(id=str(m_id), full_name=name, email=email, phone=phone)
+        return self.stub.UpdateMember(req)
+    def get_member_detail(self, m_id):
+        return self.stub.GetMemberDetail(library_pb2.UserIdRequest(user_id=str(m_id)))
+    def create_member(self, full_name, email, phone):
+        req = library_pb2.Member(full_name=full_name, email=email, phone=phone)
+        return self.stub.CreateMember(req)        
+    def get_all_members(self):
+        return list(self.stub.GetAllMembers(library_pb2.SearchRequest(query="")))
+    #D2. Creation Wrapper (Uses update_staff_profile for detournement)
     def create_user(self, username, email, password):
         """Crée un nouvel utilisateur staff en détournant le RPC UpdateStaffProfile."""
         
@@ -138,7 +146,58 @@ class LibraryClient:
     # ----------------------------------------------------
     # E. User Management (List, Get, Delete) 🚀 NOUVEAU 🚀
     # ----------------------------------------------------
-    
+    # ----------------------------------------------------
+    # F. Book Management (Update & Delete) 🚀 NOUVEAU 🚀
+    # ----------------------------------------------------
+
+    def update_book(self, book_obj):
+        """Appelle le RPC UpdateBookAvailability pour mettre à jour les infos d'un livre."""
+        try:
+            return self.stub.UpdateBookAvailability(book_obj)
+        except grpc.RpcError as e:
+            print(f"Error calling UpdateBookAvailability: {e.details()}")
+            return library_pb2.StatusResponse(success=False, message=e.details())
+
+    def delete_book(self, book_id):
+        """Appelle le RPC DeleteBook pour supprimer un livre via son ID."""
+        request = library_pb2.SearchRequest(query=str(book_id))
+        try:
+            return self.stub.DeleteBook(request)
+        except grpc.RpcError as e:
+            # Si vous avez l'erreur UNIMPLEMENTED ici, c'est que le serveur 
+            # n'a pas encore redémarré avec le nouveau .proto
+            print(f"Error calling DeleteBook RPC: {e.details()}")
+            return library_pb2.StatusResponse(success=False, message=e.details())
+
+    def get_book_detail(self, book_id):
+        """Appelle le RPC GetBook pour récupérer les données d'un livre spécifique."""
+        request = library_pb2.SearchRequest(query=str(book_id))
+        try:
+            return self.stub.GetBook(request)
+        except grpc.RpcError as e:
+            print(f"Error calling GetBook RPC: {e.details()}")
+            return None
+    def return_book(self, member_id, book_id):
+        """Appelle le serveur pour enregistrer un retour."""
+        request = library_pb2.BorrowRequest(
+            member_id=str(member_id),
+            book_id=int(book_id)
+        )
+        try:
+            return self.stub.ReturnBook(request)
+        except grpc.RpcError as e:
+            return library_pb2.StatusResponse(success=False, message="Erreur de connexion au serveur.")
+    def borrow_book(self, member_id, book_id):
+        """Appelle le serveur pour enregistrer un emprunt."""
+        request = library_pb2.BorrowRequest(
+            member_id=str(member_id),
+            book_id=int(book_id)
+        )
+        try:
+            return self.stub.BorrowBook(request)
+        except grpc.RpcError as e:
+            print(f"Erreur gRPC : {e.details()}")
+            return library_pb2.StatusResponse(success=False, message="Le serveur gRPC ne répond pas.")
     def get_all_users(self):
         """Appelle le RPC GetAllUsers pour récupérer tous les utilisateurs."""
         request = library_pb2.SearchRequest(query="")
@@ -168,129 +227,3 @@ class LibraryClient:
         except grpc.RpcError as e:
             details = e.details()
             return library_pb2.StatusResponse(success=False, message=f"Échec RPC: {details}")
-        
-   # --- GESTION DES CLIENTS ---
-    
-    def get_all_clients(self):
-        request = library_pb2.SearchRequest(query="")
-        try:
-            return list(self.stub.GetAllClients(request))
-        except grpc.RpcError:
-            return []
-
-    def get_client_details(self, client_id):
-        """Récupère les détails d'un client par son ID pour l'édition."""
-        request = library_pb2.ClientIdRequest(client_id=int(client_id))
-        try:
-            # On utilise GetClient (sans le "ById") pour correspondre au stub généré
-            return self.stub.GetClient(request)
-        except grpc.RpcError as e:
-            print(f"Erreur gRPC GetClient: {e.details()}")
-            return None
-    def create_client(self, nom, email, telephone="", adresse=""):
-        # Correction : library_pb2.Client
-        request = library_pb2.Client(
-            nom=nom,
-            email=email,
-            telephone=telephone,
-            adresse=adresse
-        )
-        try:
-            return self.stub.CreateClient(request)
-        except grpc.RpcError as e:
-            return library_pb2.StatusResponse(success=False, message=e.details())
-
-    def update_client(self, client_id, nom, email, telephone, adresse):
-    # On utilise le message Client défini dans votre .proto
-        client_msg = library_pb2.Client(
-            id=int(client_id),
-            nom=nom,
-            email=email,
-            telephone=telephone,
-            adresse=adresse
-        )
-        try:
-            return self.stub.UpdateClient(client_msg)
-        except grpc.RpcError as e:
-            return library_pb2.StatusResponse(success=False, message=str(e.details()))
-    def delete_client(self, client_id):
-        # Correction : library_pb2.ClientIdRequest
-        request = library_pb2.ClientIdRequest(client_id=int(client_id))
-        try:
-            return self.stub.DeleteClient(request)
-        except grpc.RpcError as e:
-            return library_pb2.ClientResponse(success=False, message=e.details())
-        
-####commendes#####
-  # -------- EMPRUNTS (Loans) --------
-    
-    def create_loan(self, client_id, book_id, borrow_date=None, return_date=None):
-        """Crée un nouvel emprunt."""
-        borrow_date = borrow_date or datetime.now().strftime("%Y-%m-%d")
-        return_date = return_date or (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
-        
-        request = library_pb2.BorrowRequest(
-            client_id=str(client_id),
-            book_id=str(book_id),
-            borrow_date=borrow_date,
-            return_date=return_date
-        )
-        try:
-            return self.stub.CreateLoan(request)
-        except grpc.RpcError as e:
-            return library_pb2.BorrowResponse(success=False, message=e.details())
-
-    def get_loan(self, loan_id):
-        """Récupère les détails d'un emprunt par ID."""
-        request = library_pb2.BorrowListRequest(client_id=str(loan_id))
-        try:
-            return self.stub.GetLoan(request)
-        except grpc.RpcError as e:
-            print(f"Erreur gRPC GetLoan: {e.details()}")
-            return None
-
-    def list_loans(self, client_id=None):
-        """Liste tous les emprunts ou ceux d’un client spécifique."""
-        request = library_pb2.BorrowListRequest(client_id=str(client_id) if client_id else "")
-        try:
-            return list(self.stub.ListLoans(request))
-        except grpc.RpcError as e:
-            print(f"Erreur gRPC ListLoans: {e.details()}")
-            return []
-
-    def update_loan(self, loan_id, client_id, book_id, borrow_date, return_date):
-        """Met à jour un emprunt existant."""
-        request = library_pb2.BorrowRequest(
-            client_id=str(client_id),
-            book_id=str(book_id),
-            borrow_date=borrow_date,
-            return_date=return_date
-        )
-        try:
-            return self.stub.UpdateLoan(request)
-        except grpc.RpcError as e:
-            return library_pb2.BorrowResponse(success=False, message=e.details())
-
-    def return_book(self, loan_id):
-        """Marque un livre comme retourné."""
-        request = library_pb2.BorrowListRequest(client_id=str(loan_id))
-        try:
-            return self.stub.ReturnBook(request)
-        except grpc.RpcError as e:
-            return library_pb2.BorrowResponse(success=False, message=e.details())
-
-    def get_loan_stats(self):
-        """Récupère des statistiques globales des emprunts."""
-        try:
-            return self.stub.GetLoanStats(library_pb2.SearchRequest(query=""))
-        except grpc.RpcError as e:
-            print(f"Erreur gRPC GetLoanStats: {e.details()}")
-            return None
-
-    def get_available_books(self):
-        """Liste les livres actuellement disponibles pour emprunt."""
-        try:
-            return list(self.stub.GetAvailableBooks(library_pb2.SearchRequest(query="")))
-        except grpc.RpcError as e:
-            print(f"Erreur gRPC GetAvailableBooks: {e.details()}")
-            return []

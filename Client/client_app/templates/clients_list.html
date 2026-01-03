@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,98 +8,137 @@
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <style>
-        .action-link { cursor: pointer; margin-right: 8px; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85em; display: inline-block; font-weight: 500; border: none; }
-        .edit-btn { background-color: #3f72af; color: white; transition: 0.3s; }
-        .edit-btn:hover { background-color: #112d4e; }
-        .delete-btn { background-color: #dc3545; color: white; transition: 0.3s; }
-        .delete-btn:hover { background-color: #a71d2a; }
-        
-        .table-container { background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th { background-color: #f8f9fa; color: #333; font-weight: 600; text-transform: uppercase; font-size: 0.8em; letter-spacing: 0.5px; }
-        td, th { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        tr:hover { background-color: #fcfcfc; }
+        /* Styles spécifiques pour le tableau et les actions */
+        .action-link { 
+            cursor: pointer; 
+            margin-right: 8px; 
+            padding: 5px 8px; 
+            border-radius: 4px; 
+            text-decoration: none;
+            font-size: 0.9em;
+            display: inline-block;
+        }
+        .view-btn { background-color: #17a2b8; color: white; border: none; }
+        .edit-btn { background-color: #007bff; color: white; border: none; }
+        .delete-btn { background-color: #dc3545; color: white; border: none; }
+        .active-client { color: green; font-weight: bold; }
+        .inactive-client { color: red; }
+        .action-cell { display: flex; align-items: center; }
+        .action-cell form { margin: 0; }
+        .action-cell button { cursor: pointer; }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .badge-emprunts {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .badge-no-emprunts {
+            background-color: #f5f5f5;
+            color: #757575;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container dashboard-container" style="max-width: 1100px; margin: 30px auto;">
-        <div class="header-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="color: #112d4e; margin: 0;">👥 Liste des Clients</h1>
-            <div style="display: flex; gap: 10px;">
-                <a href="{% url 'dashboard' %}" class="nav-button" style="text-decoration: none; padding: 10px 15px; background: #dbe2ef; color: #3f72af; border-radius: 5px; font-weight: bold;">🏠 Dashboard</a>
-            </div>
+    <div class="login-container dashboard-container">
+        
+        <div class="header-controls" style="justify-content: space-between;">
+            <h1>👥 Liste des Clients</h1>
+            <a href="{% url 'dashboard' %}" class="nav-button">
+                <i aria-hidden="true">🏠</i> Tableau de Bord
+            </a>
         </div>
         
-        <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-          <form method="get" style="display: flex; gap: 0; flex: 1; max-width: 400px;">
-                <input type="text" name="q" placeholder="Rechercher par nom ou email..."
-                    value="{{ query|default:'' }}"
-                    style="flex: 1; padding: 10px 15px; border: 1px solid #dbe2ef; border-radius: 5px 0 0 5px; outline: none;">
-                <button type="submit"
-                        style="background-color: #3f72af; color: white; border: none; padding: 10px 20px; border-radius: 0 5px 5px 0; cursor: pointer;">
-                    🔍
+        <a href="{% url 'create_client' %}" 
+        class="action-button-primary" 
+        style="background-color: #3f72af; cursor: pointer; display:inline-block; padding:10px 15px; border-radius:4px; color:white; text-decoration:none;">
+             ➕ Ajouter un Client
+        </a>
+
+        
+        <!-- Barre de recherche -->
+        <form method="get" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" 
+                       name="q" 
+                       placeholder="Rechercher par nom, prénom ou email..." 
+                       value="{{ query|default:'' }}"
+                       style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <button type="submit" class="action-button-primary" style="background-color: #3f72af;">
+                    🔍 Rechercher
                 </button>
-            </form>
-
-
-
-            <div style="margin: 20px 0;">
-                <a href="{% url 'create_client' %}" class="action-button-primary" style="background-color: #3f72af; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
-                    ➕ Ajouter un Client
-                </a>
             </div>
-        </div>
+        </form>
 
-        <div class="table-container">
-            <table>
+        <hr>
+        
+        {% if message %}
+            <div class="message-container success-message">{{ message }}</div>
+        {% elif error_message %}
+            <div class="message-container error-message">{{ error_message }}</div>
+        {% endif %}
+
+        {% if clients %}
+            <h3>Clients trouvés : {{ clients|length }}</h3>
+            
+            <table style="width: 100%;">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Nom Complet</th>
                         <th>Email</th>
                         <th>Téléphone</th>
-                        <th>Inscription</th>
-                        <th style="text-align: center;">Actions</th>
+                        <th>Emprunts Actifs</th>
+                        <th>Date d'Inscription</th>
+                        <th style="width: 200px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for client in clients %}
                     <tr>
-                        <td style="color: #666;">#{{ client.id }}</td>
-                        <td><strong>{{ client.nom }}</strong></td>
+                        <td>{{ client.id }}</td>
+                        <td><strong>{{ client.nom }} {{ client.prenom }}</strong></td>
                         <td>{{ client.email }}</td>
                         <td>{{ client.telephone }}</td>
-                        <td style="font-size: 0.9em; color: #888;">{{ client.date_inscription }}</td>
-                        <td style="display: flex; gap: 10px;">
-                          <a href="{% url 'edit_client' client_id=client.id %}" 
-                                class="action-button-edit" 
-                                style="background-color: #007bff; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 14px;">
-                                    ✏️ Éditer
+                        <td>
+                            <span class="badge {% if client.emprunts_actifs > 0 %}badge-emprunts{% else %}badge-no-emprunts{% endif %}">
+                                {{ client.emprunts_actifs }} livre(s)
+                            </span>
+                        </td>
+                        <td>{{ client.date_inscription|date:"d/m/Y" }}</td>
+                        <td class="action-cell">
+                           
+                            
+                            <!-- Bouton Éditer -->
+                            <a href="{% url 'edit_client' client_id=client.id %}" 
+                             style="background-color: #007bff; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; border: none; transition: background 0.3s;">
+                                 ✏️ Éditer
                             </a>
-
+                            
+                            <!-- Bouton Supprimer -->
                             <form method="POST" 
-                                action="{% url 'delete_client_action' client_id=client.id %}" 
-                                style="display: inline;" 
-                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer le client {{ client.nom }} ?');">
+                                  action="{% url 'delete_client_action' client_id=client.id %}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer le client {{ client.nom }} {{ client.prenom }}? Cette action est irréversible.');">
                                 {% csrf_token %}
                                 <button type="submit" 
-                                        style="background-color: #dc3545; color: white; padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px;">
+                                        class="action-link delete-btn" 
+                                        title="Supprimer le client">
                                     🗑️ Supprimer
                                 </button>
                             </form>
-                        </td>
-                    
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" style="padding: 40px; text-align: center; color: #999; font-style: italic;">
-                            🚀 Aucun client trouvé pour "{{ query }}".
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
+        {% else %}
+            <p style="text-align: center;">Aucun client trouvé.</p>
+        {% endif %}
+
     </div>
 </body>
-</html
+</html>
