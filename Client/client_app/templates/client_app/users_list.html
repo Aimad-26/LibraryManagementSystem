@@ -4,108 +4,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | Gestion Utilisateurs</title>
+    <title>Users Management | Librarian Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Styles spécifiques pour le tableau et les actions */
-        .action-link { 
-            cursor: pointer; 
-            margin-right: 8px; 
-            padding: 5px 8px; 
-            border-radius: 4px; 
-            text-decoration: none;
-            font-size: 0.9em;
-            display: inline-block;
-        }
-        .edit-btn { background-color: #007bff; color: white; border: none; }
-        .delete-btn { background-color: #dc3545; color: white; border: none; }
-        .active-user { color: green; font-weight: bold; }
-        .inactive-user { color: red; }
-        .action-cell { display: flex; align-items: center; }
-        .action-cell form { margin: 0; }
-        .action-cell button { cursor: pointer; }
+        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-inactive { background-color: #f8d7da; color: #721c24; }
+        .role-badge { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        a { text-decoration: none; }
     </style>
 </head>
-<body>
-    <div class="login-container dashboard-container">
-        
-        <div class="header-controls" style="justify-content: space-between;">
-            <h1>👥 Liste des Utilisateurs Staff</h1>
-            <a href="{% url 'dashboard' %}" class="nav-button">
-                <i aria-hidden="true">🏠</i> Tableau de Bord
-            </a>
+<body class="dashboard-page">
+
+<div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-overlay" id="profileOverlay"></div>
+    <aside class="profile-panel-body">
+        <div class="profile-panel-header">
+            <button type="button" class="profile-panel-close" id="profileClose">×</button>
+            <div class="profile-panel-user">
+                <div class="profile-panel-avatar">👤</div>
+                <div>
+                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
+                    <p class="profile-panel-handle">@{{ username|default:"librarian" }}</p>
+                </div>
+            </div>
+            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">Edit Profile</a>
         </div>
-        
-        <div class="action-buttons" style="margin-bottom: 20px;">
-             <a href="{% url 'create_user' %}" class="action-button-primary" style="background-color: #3f72af;">
-                <i aria-hidden="true">👤</i> Créer un Utilisateur
-            </a>
+        <nav class="profile-panel-menu">
+            <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
+                <span>Profile</span><span class="profile-panel-arrow">›</span>
+            </button>
+            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
+                <span>Log out</span><span class="profile-panel-arrow">›</span>
+            </button>
+        </nav>
+    </aside>
+</div>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
         </div>
-        
+        <nav class="sidebar-nav">
+            <p class="sidebar-section-label">LIBRARY</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+            <a href="{% url 'add_book' %}" class="sidebar-link">Add New Book</a>
+            <a href="{% url 'books_list' %}" class="sidebar-link">📚 Manage Books</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link active">📖 Users</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link">📖 Members</a>
+            <p class="sidebar-section-label">ACCOUNT</p>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
+        </nav>
+    </aside>
 
-        <hr>
-        
-        {% if message %}
-            <div class="message-container success-message">{{ message }}</div>
-        {% elif error_message %}
-            <div class="message-container error-message">{{ error_message }}</div>
-        {% endif %}
+    <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+            <header class="topbar">
+                <div class="topbar-search">
+                    <span class="text-muted fw-light">Administration / <strong>Staff List</strong></span>
+                </div>
+                <div class="topbar-user">
+                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
+                    <button type="button" class="topbar-avatar-btn" id="profileToggle">👤</button>
+                </div>
+            </header>
 
+            <section class="hero-banner">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">User Management</p>
+                    <h1 class="hero-title">👥 Liste des Utilisateurs</h1>
+                    <p class="hero-subtitle">Gérez les accès et les permissions des membres de l'équipe.</p>
+                </div>
+                <div class="hero-actions">
+                     <a href="{% url 'create_user' %}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                        + Créer un Utilisateur
+                    </a>
+                </div>
+            </section>
 
-        {% if user_results %}
-            <h3>Utilisateurs trouvés : {{ user_results|length }}</h3>
-            
-            <table style="width: 100%;">
-                <thead>
+            {% if message or messages %}
+                <div class="px-4 mt-3">
+                    <div class="alert alert-success shadow-sm">{{ message }}</div>
+                </div>
+            {% endif %}
+
+            <section class="dashboard-section p-4">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th>ID</th>
-                        <th>Nom d'utilisateur</th>
-                        <th>Email</th>
-                        <th>Rôle</th>
-                        <th>Statut</th>
-                        <th>Date de Création</th>
-                        <th style="width: 150px;">Actions</th> </tr>
+                        <th class="ps-4 py-3 text-uppercase fs-xs fw-bold text-muted">Identité Utilisateur</th>
+                        <th class="py-3 text-uppercase fs-xs fw-bold text-muted">Contact Email</th>
+                        <th class="py-3 text-uppercase fs-xs fw-bold text-muted">Rôle Système</th>
+                        <th class="py-3 text-uppercase fs-xs fw-bold text-muted">État du Compte</th>
+                        <th class="pe-4 py-3 text-uppercase fs-xs fw-bold text-muted text-end">Actions de Gestion</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for user in user_results %}
                     <tr>
-                        <td>{{ user.user_id }}</td>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.email|default:"N/A" }}</td>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3 d-flex align-items-center justify-content-center bg-primary text-white fw-bold shadow-sm" 
+                                     style="width: 40px; height: 40px; border-radius: 10px; font-size: 1.1rem;">
+                                    {{ user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark fs-6">{{ user.username }}</div>
+                                    <small class="text-muted">Inscrit le : {{ user.date_joined|date:"d M Y" }}</small>
+                                </div>
+                            </div>
+                        </td>
                         <td>
-                            {% if user.is_superuser %}👑 Admin{% elif user.is_staff %}Staff{% else %}Standard{% endif %}
+                            <span class="text-secondary">{{ user.email|default:"—" }}</span>
                         </td>
-                        <td class="{% if user.is_active %}active-user{% else %}inactive-user{% endif %}">
-                            {{ user.is_active|yesno:"Actif, Désactivé" }}
+                        <td>
+                            {% if user.is_superuser %}
+                                <span class="badge rounded-pill bg-dark text-white px-3 py-2 fw-semibold shadow-sm" style="font-size: 0.7rem;">
+                                    <i class="bi bi-shield-lock me-1"></i> ADMINISTRATEUR
+                                </span>
+                            {% elif user.is_staff %}
+                                <span class="badge rounded-pill bg-info text-dark px-3 py-2 fw-semibold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-person-badge me-1"></i> LIBRARIAN STAFF
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-light text-muted border px-3 py-2 fw-semibold" style="font-size: 0.7rem;">
+                                    STANDARD USER
+                                </span>
+                            {% endif %}
                         </td>
-                        <td>{{ user.date_joined|date:"Y-m-d" }}</td>
-                        <td class="action-cell">
-                            
-                            <a href="{% url 'edit_user' user_id=user.user_id %}" class="action-link edit-btn" title="Éditer">
-                                ✏️ Éditer
-                            </a>
-                            
-                            <form method="POST" action="{% url 'delete_user_action' user_id=user.user_id %}" style="display: inline;" 
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir désactiver (supprimer logiquement) l\'utilisateur {{ user.username }}? Cette action est irréversible.');">
-                                {% csrf_token %}
+                        <td>
+                            {% if user.is_active %}
+                                <div class="d-flex align-items-center text-success fw-bold" style="font-size: 0.85rem;">
+                                    <span class="pulse-green me-2"></span> Compte Actif
+                                </div>
+                            {% else %}
+                                <div class="d-flex align-items-center text-danger fw-bold" style="font-size: 0.85rem;">
+                                    <span class="pulse-red me-2"></span> Désactivé
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'edit_user' user_id=user.user_id %}" 
+                                   class="btn btn-sm btn-outline-primary border-2 fw-bold px-3 rounded-pill transition-all">
+                                    ÉDITER
+                                </a>
                                 
-                                <button type="submit" class="action-link delete-btn" 
-                                        {% if user.is_superuser or not user.is_active %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}
-                                        title="Désactiver l'utilisateur">
-                                    🗑️ Supprimer
-                                </button>
-                            </form>
-                            
+                                <form method="POST" action="{% url 'delete_user_action' user_id=user.user_id %}" 
+                                      onsubmit="return confirm('Confirmer la suspension de l\'utilisateur {{ user.username }} ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-2 fw-bold px-3 rounded-pill transition-all" 
+                                            {% if user.is_superuser or not user.is_active %}disabled style="opacity: 0.4; cursor: not-allowed;"{% endif %}>
+                                        SUPPRIMER
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="text-muted fs-5">Aucun membre de l'équipe trouvé.</div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        {% else %}
-            <p style="text-align: center;">Aucun utilisateur staff trouvé.</p>
-        {% endif %}
-
+        </div>
     </div>
+</section>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const panel = document.getElementById('profilePanel');
+        const toggleBtn = document.getElementById('profileToggle');
+        const closeBtn = document.getElementById('profileClose');
+        const overlay = document.getElementById('profileOverlay');
+
+        if (panel && toggleBtn) {
+            toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+            [closeBtn, overlay].forEach(el => {
+                if (el) el.addEventListener('click', () => panel.classList.remove('open'));
+            });
+        }
+    });
+</script>
 </body>
 </html>
+<style>
+    /* Animation de statut (petit point clignotant) */
+.pulse-green {
+    width: 8px; height: 8px; background-color: #28a745; border-radius: 50%;
+    box-shadow: 0 0 0 rgba(40, 167, 69, 0.4); animation: pulse 2s infinite;
+}
+.pulse-red {
+    width: 8px; height: 8px; background-color: #dc3545; border-radius: 50%;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.fs-xs { font-size: 0.75rem; }
+.transition-all { transition: all 0.3s ease; }
+.transition-all:hover { transform: scale(1.05); }
+</style>
