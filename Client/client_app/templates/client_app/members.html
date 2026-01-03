@@ -4,100 +4,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | Gestion Membres</title>
+    <title>Membres | Librarian Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Styles spécifiques pour le tableau et les actions */
-        .action-link { 
-            cursor: pointer; 
-            margin-right: 8px; 
-            padding: 5px 8px; 
-            border-radius: 4px; 
-            text-decoration: none;
-            font-size: 0.9em;
-            display: inline-block;
-        }
-        .edit-btn { background-color: #007bff; color: white; border: none; }
-        .delete-btn { background-color: #dc3545; color: white; border: none; }
-        .member-id { font-weight: bold; color: #3f72af; }
-        .action-cell { display: flex; align-items: center; }
-        .action-cell form { margin: 0; }
-        .action-cell button { cursor: pointer; }
+        .sidebar-link.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+        .avatar-member { width: 40px; height: 40px; border-radius: 10px; background-color: #3f72af; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .fs-xs { font-size: 0.75rem; }
+        a { text-decoration: none; }
+        .table-hover tbody tr:hover { background-color: #f8f9fa; transition: 0.2s; }
     </style>
 </head>
-<body>
-    <div class="login-container dashboard-container">
-        
-        <div class="header-controls" style="justify-content: space-between;">
-            <h1>👥 Liste des Membres (Clients)</h1>
-            <a href="{% url 'dashboard' %}" class="nav-button">
-                <i aria-hidden="true">🏠</i> Tableau de Bord
-            </a>
-        </div>
-        
-        <div class="action-buttons" style="margin-bottom: 20px;">
-             <a href="{% url 'add_member' %}" class="action-button-primary" style="background-color: #3f72af;">
-                <i aria-hidden="true">👤</i> Inscrire un Nouveau Membre
-            </a>
-        </div>
+<body class="dashboard-page">
 
-        <hr>
-        
-        {% if message %}
-            <div class="message-container success-message">{{ message }}</div>
-        {% elif error_message %}
-            <div class="message-container error-message">{{ error_message }}</div>
-        {% endif %}
-
-        {% if members %}
-            <h3>Membres enregistrés : {{ members|length }}</h3>
-            
-            <table style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nom Complet</th>
-                        <th>Email</th>
-                        <th>Téléphone</th>
-                        <th>Date d'adhésion</th>
-                        <th style="width: 150px;">Actions</th> 
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in members %}
-                    <tr>
-                        <td class="member-id">#{{ m.id }}</td>
-                        <td>{{ m.full_name }}</td>
-                        <td>{{ m.email }}</td>
-                        <td>{{ m.phone|default:"Non renseigné" }}</td>
-                        <td>{{ m.date_joined|date:"d/m/Y" }}</td>
-                        <td class="action-cell">
-                            
-                            <a href="{% url 'edit_member' member_id=m.id %}" class="action-link edit-btn" title="Éditer le profil">
-                                ✏️ Éditer
-                            </a>
-                            
-                            <form method="POST" action="{% url 'delete_member' member_id=m.id %}" style="display: inline;" 
-                                  onsubmit="return confirm('ATTENTION : Voulez-vous supprimer DÉFINITIVEMENT le membre {{ m.full_name }} ? Cette action effacera toutes ses données.');">
-                                {% csrf_token %}
-                                <button type="submit" class="action-link delete-btn" title="Supprimer définitivement">
-                                    🗑️ Supprimer
-                                </button>
-                            </form>
-                            
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %} 
-            <div style="padding: 40px; text-align: center;">
-                <p>Aucun membre trouvé dans la bibliothèque.</p>
-                <p><small>Cliquez sur "Inscrire un Nouveau Membre" pour commencer.</small></p>
+<div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-overlay" id="profileOverlay"></div>
+    <aside class="profile-panel-body">
+        <div class="profile-panel-header">
+            <button type="button" class="profile-panel-close" id="profileClose">×</button>
+            <div class="profile-panel-user">
+                <div class="profile-panel-avatar">👤</div>
+                <div>
+                    <p class="profile-panel-name">{{ username|default:"Librarian" }}</p>
+                    <p class="profile-panel-handle">@{{ username|default:"librarian" }}</p>
+                </div>
             </div>
-        {% endif %}
+            <a href="{% url 'staff_profile' %}" class="profile-panel-edit-btn">Edit Profile</a>
+        </div>
+        <nav class="profile-panel-menu">
+            <button type="button" class="profile-panel-item" onclick="window.location.href='{% url 'staff_profile' %}'">
+                <span>Profile</span><span class="profile-panel-arrow">›</span>
+            </button>
+            <button type="button" class="profile-panel-item profile-panel-item-danger" onclick="window.location.href='{% url 'staff_logout' %}'">
+                <span>Log out</span><span class="profile-panel-arrow">›</span>
+            </button>
+        </nav>
+    </aside>
+</div>
 
-    </div>
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ MEDIA_URL }}{{ logo_image }}" alt="Logo" class="logo-img">
+        </div>
+        <nav class="sidebar-nav">
+            <p class="sidebar-section-label">LIBRARY</p>
+            <a href="{% url 'dashboard' %}" class="sidebar-link">Dashboard</a>
+            <a href="{% url 'add_book' %}" class="sidebar-link">Add New Book</a>
+            <a href="{% url 'books_list' %}" class="sidebar-link">📚 Manage Books</a>
+            <a href="{% url 'users_list' %}" class="sidebar-link">📖 Users Staff</a>
+            <a href="{% url 'members_list' %}" class="sidebar-link active">👥 Members (Clients)</a>
+            <p class="sidebar-section-label">ACCOUNT</p>
+            <a href="{% url 'staff_profile' %}" class="sidebar-link">👤 My Profile</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+            <header class="topbar">
+                <div class="topbar-search">
+                    <span class="text-muted fw-light">Annuaire / <strong>Liste des Membres</strong></span>
+                </div>
+                <div class="topbar-user">
+                    <span class="topbar-username">{{ username|default:"Librarian" }}</span>
+                    <button type="button" class="topbar-avatar-btn" id="profileToggle">👤</button>
+                </div>
+            </header>
+
+            <section class="hero-banner">
+                <div class="hero-text-block">
+                    <p class="hero-eyebrow">Membership Directory</p>
+                    <h1 class="hero-title">👥 Liste des Membres</h1>
+                    <p class="hero-subtitle">Gérez les inscriptions des lecteurs et leurs informations de contact.</p>
+                </div>
+                <div class="hero-actions">
+                     <a href="{% url 'add_member' %}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                        + Inscrire un Membre
+                    </a>
+                </div>
+            </section>
+
+            {% if message or messages %}
+                <div class="px-4 mt-3">
+                    <div class="alert alert-success shadow-sm border-0">
+                        {% if message %}{{ message }}{% endif %}
+                        {% for msg in messages %}{{ msg }}{% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <section class="dashboard-section p-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3 text-uppercase fs-xs fw-bold text-muted">Membre</th>
+                                    <th class="py-3 text-uppercase fs-xs fw-bold text-muted">Email</th>
+                                    <th class="py-3 text-uppercase fs-xs fw-bold text-muted">Téléphone</th>
+                                    <th class="py-3 text-uppercase fs-xs fw-bold text-muted">Date d'adhésion</th>
+                                    <th class="pe-4 py-3 text-uppercase fs-xs fw-bold text-muted text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in members %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-member me-3 shadow-sm">
+                                                {{ m.full_name|slice:":1"|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ m.full_name }}</div>
+                                                <small class="text-muted">ID: #{{ m.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="text-secondary">{{ m.email }}</span></td>
+                                    <td><span class="badge bg-light text-dark border fw-normal">{{ m.phone|default:"—" }}</span></td>
+                                    <td>{{ m.date_joined|date:"d M Y" }}</td>
+                                    <td class="pe-4 text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a href="{% url 'edit_member' member_id=m.id %}" 
+                                               class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold border-2">
+                                                ÉDITER
+                                            </a>
+                                            
+                                            <form method="POST" action="{% url 'delete_member' member_id=m.id %}" 
+                                                  onsubmit="return confirm('Supprimer définitivement {{ m.full_name }} ?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold border-2">
+                                                    SUPPRIMER
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <p class="text-muted mb-0">Aucun membre enregistré pour le moment.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const panel = document.getElementById('profilePanel');
+        const toggleBtn = document.getElementById('profileToggle');
+        const closeBtn = document.getElementById('profileClose');
+        const overlay = document.getElementById('profileOverlay');
+
+        if (panel && toggleBtn) {
+            toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+            [closeBtn, overlay].forEach(el => {
+                if (el) el.addEventListener('click', () => panel.classList.remove('open'));
+            });
+        }
+    });
+</script>
 </body>
 </html>
