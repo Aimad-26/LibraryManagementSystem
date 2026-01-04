@@ -9,6 +9,13 @@
 
 {% block content %}
 <style>
+      /* Animation d'apparition */
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
     /* --- SECTION HEADER / HERO --- */
     .hero-banner-users {
         background: #3f72af; /* Violet vif identique à l'image */
@@ -190,7 +197,7 @@
         + Créer un Utilisateur
     </a>
 </section>
-
+  
 <section class="table-container-card">
     <div class="table-responsive">
         <table class="table align-middle mb-0">

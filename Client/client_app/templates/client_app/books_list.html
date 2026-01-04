@@ -9,6 +9,33 @@
 
 {% block content %}
 <style>
+     @keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-message {
+    animation: fadeInSlide 0.5s ease-out forwards;
+}
+
+.alert-custom {
+    border-radius: 12px;
+    padding: 15px 20px;
+}
+
+/* Style Vert (Succès) */
+.alert-success {
+    background-color: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-left: 5px solid #10b981 !important;
+}
+
+/* Style Rouge (Erreur) */
+.alert-error, .alert-danger {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    border-left: 5px solid #ef4444 !important;
+}
     /* --- SECTION HEADER / HERO --- */
     .hero-banner-list {
         background: #3f72af; /* Violet vif identique à l'image */
@@ -198,7 +225,23 @@
         + Ajouter un Livre
     </a>
 </section>
-
+</section>
+    {% if messages %}
+    <div class="px-4 mt-3">
+        {% for message in messages %}
+            <div class="alert alert-custom alert-{{ message.tags }} shadow-sm border-0 mb-3 animate-message">
+                <div class="d-flex align-items-center">
+                    {% if message.tags == 'success' %}
+                        <i class="ri-checkbox-circle-fill fs-4 me-3"></i>
+                    {% else %}
+                        <i class="ri-error-warning-fill fs-4 me-3"></i>
+                    {% endif %}
+                    <span class="fw-bold small">{{ message }}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 <section class="table-container-card">
     <div class="table-responsive">
         <table class="table align-middle mb-0">
